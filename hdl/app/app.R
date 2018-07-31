@@ -7,6 +7,14 @@ for(pkg in pkgs){
 }
 
 load("data/data.rda")
+source("layout/sidebar.R")
+source("layout/body.R")
+
+ui <- dashboardPage(
+    header = dashboardHeader(title = "Fast Food Study"),
+    sidebar = sidebar,
+    body = body
+)
 
 server <- function(input, output) {
     source("layout/inputs.R", local = TRUE)
@@ -28,3 +36,5 @@ server <- function(input, output) {
     
     source("cli/boxplot.R", local = TRUE)
 }
+
+shinyApp(ui = ui, server = server)
