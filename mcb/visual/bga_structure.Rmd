@@ -1,0 +1,175 @@
+---
+title: "Biogenic Amines Structure"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+        css: ../../css/styles.css
+runtime: shiny 
+---
+
+<style>
+div.shiny-flow-layout > div{
+width: 100% !important
+}
+img{
+width: 100%
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble','data.table', "ggplot2",
+         'ggtree',"treeio","heatmaply")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../Rdata/bga_precalc.Rdata")
+load("../fmcsR/mcs.Rdata")
+```
+
+Structures
+====================
+
+Inputs {.sidebar data-width=350} 
+--------------------
+
+###
+
+```{r}
+inputPanel(
+    selectInput("feature1", "Select a Feature",
+                choices = fdata$Metabolite_Name, 
+                selected = fdata$Metabolite_Name[1],
+                width='150%'),
+    selectInput("feature2", "Select a Feature",
+                choices = fdata$Metabolite_Name, 
+                selected = fdata$Metabolite_Name[1],
+                width='150%')
+)
+```
+
+<div class="shiny-input-panel">
+<div style="border: 1px solid #CCCCCC; border-radius: 5px; margin: 5% 0.5%; background-color: #FFFFFF;">
+<div style="margin:5% 3%;">
+<p style="font-size: 110%; font-weight: bold">
+Info:
+</p>
+<p>
+In this page, you can look at each biogenic amine's structure, and the structrual similarity between molecules. The structrual similarity is calculated using the maximum common substracture (MCS) algorithms, with the R package <a href="https://www.bioconductor.org/packages/release/bioc/html/fmcsR.html">fmcsR</a>.<br /><br />In the <span style="font-style: italic;">Heatmap</span> page, you can click on any the heatmap to see the structure of any two molecules.
+</p>
+</div>
+</div>
+</div>
+
+Column {data-width=200}
+-------------------
+
+### Panel 1
+
+```{r}
+renderImage({
+    basename = rownames(fdata)[which(fdata$Metabolite_Name == input$feature1)]
+    list(src=str_c("../ChemMine/img/", basename, ".png"),
+         alt = input$feature)
+}, deleteFile = F)
+```
+
+### Panel 2
+
+```{r}
+renderImage({
+    basename = rownames(fdata)[which(fdata$Metabolite_Name == input$feature2)]
+    list(src=str_c("../ChemMine/img/", basename, ".png"),
+         alt = input$feature)
+}, deleteFile = F)
+```
+
+
+Column {data-width=400}
+-------------------
+
+###
+
+```{r}
+hc <- hclust(dist(mcs_mat), method="complete")
+tree = as.phylo(hc)
+p = ggtree(tree) +
+    geom_tiplab(size=4) +
+    scale_x_continuous(limits=c(0,5)) +
+    theme_tree2() +
+    #geom_text2(aes(subset=!isTip, label=node), hjust=-0.3) +
+    # geom_text(aes(subset=isTip, x=x, y=y, label=label), hjust=0) +
+    geom_hilight(node=94, fill="steelblue")+
+    geom_cladelabel(node=94, label="Choline Metabolites", offset=2) +
+    geom_hilight(node=95, fill="darkgreen")+
+    geom_cladelabel(node=95, label="Acyl Carnitines", offset=2) +
+    geom_hilight(node=104, fill="steelblue")+  
+    geom_cladelabel(node=104, label="Bile Acids", offset=2) +
+    geom_hilight(node=143, fill="darkgreen") +    # indoles
+    geom_cladelabel(node=143, label="Indole Metabolites", offset=2) +
+    theme(
+        axis.line = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        plot.margin = margin(0,2,0,2)
+    )
+renderPlot({
+    p
+})
+```
+
+Heatmap
+====================
+
+Column {data-width=500}
+--------------------
+
+### 
+
+```{r}
+heatmap = reactive({
+    heatmaply(mcs_mat, colors = rev(RdBu(256)), labCol = NA,
+              margins=c(10,350,10,10))
+})
+renderPlotly({
+    heatmap()
+})
+```
+
+Column {data-width=200}
+--------------------
+
+### row
+
+```{r}
+renderImage({
+    eventData=event_data(event="plotly_click")
+    label = heatmap()$x$data[[4]]$text[eventData[1,"y"], eventData[1,"x"]]
+    x = gsub("row: (.+)<br>column.+","\\1",label, perl=T)
+    basename = rownames(fdata)[which(fdata$Metabolite_Name == x)]
+    list(src=str_c("../ChemMine/img/", basename, ".png"),
+         alt = input$feature)
+}, deleteFile = F)
+```
+
+### column
+
+```{r}
+renderImage({
+    eventData=event_data(event="plotly_click")
+    label = heatmap()$x$data[[4]]$text[eventData[1,"y"], eventData[1,"x"]]
+    y = gsub(".+column: (.+)<br>value.+","\\1",label, perl=T)
+    basename = rownames(fdata)[which(fdata$Metabolite_Name == y)]
+    list(src=str_c("../ChemMine/img/", basename, ".png"),
+         alt = input$feature)
+}, deleteFile = F)
+```

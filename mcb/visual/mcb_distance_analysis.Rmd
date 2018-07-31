@@ -1,0 +1,129 @@
+---
+title: "Microbiome Beta Diversity PCoA"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'd3heatmap',
+         'ggthemes','Biostrings','ggplot2','ggthemr')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../../data/microbiome_and_metabolome.Rdata')
+```
+
+```{r}
+distance_matrix_fns = list.files('../qiime2_diversity/core-metrics_results_export') %>%
+    str_subset('distance_matrix')
+distance_pcoa_fns = list.files('../qiime2_diversity/core-metrics_results_export') %>%
+    str_subset('pcoa_results')
+
+distance_matrics = lapply(distance_matrix_fns, function(x){
+    filename = str_c('../qiime2_diversity/core-metrics_results_export/', x, 
+                     '/distance-matrix.tsv')
+    read.table(filename, sep='\t', header=T, row.names = 1)
+})
+names(distance_matrics) = gsub('_distance_matrix','',distance_matrix_fns)
+
+distance_pcoa = lapply(distance_pcoa_fns, function(x){
+    filename = str_c('../qiime2_diversity/core-metrics_results_export/', x,
+                     '/ordination.txt')
+    data = read.table(filename, skip=9, nrows = 40, row.names = 1, header=F)
+    colnames(data) = str_c('PC', 1:ncol(data))
+    return(data)
+})
+names(distance_pcoa) = gsub('_pcoa_results','',distance_pcoa_fns)
+
+pcoa_proportion_explained = sapply(distance_pcoa_fns, function(x){
+    filename = str_c('../qiime2_diversity/core-metrics_results_export/', x,
+                     '/ordination.txt')
+    data = read.table(filename, skip=4, nrows = 1, header=F) %>% as.numeric
+    names(data) = str_c('PC', 1:length(data))
+    return(data)
+})
+colnames(pcoa_proportion_explained) = names(distance_pcoa)
+pcoa_proportion_explained = as.data.frame(pcoa_proportion_explained)
+```
+
+```{r}
+distance_matrics = lapply(distance_matrics, function(matrix){
+    matrix = matrix[microbiome$pdata$Description, microbiome$pdata$Description]
+    colnames(matrix) = rownames(microbiome$pdata)
+    rownames(matrix) = rownames(microbiome$pdata)
+    return(matrix)
+})
+distance_pcoa = lapply(distance_pcoa, function(pcoa){
+    pcoa[microbiome$pdata$Description,]
+})
+```
+
+```{r}
+inputPanel(
+    selectInput('method','Select a Distance Method:',
+                choices = names(distance_pcoa), 
+                selected = names(distance_pcoa)[1]),
+    selectInput('x', 'Select X axis PC:',
+                choices = colnames(distance_pcoa[[1]]),
+                selected = colnames(distance_pcoa[[1]])[1]),
+    selectInput('y', 'Select Y axis PC:',
+                choices = colnames(distance_pcoa[[1]]),
+                selected = colnames(distance_pcoa[[1]])[2])
+)
+```
+
+Column 
+-------------------------------------
+    
+### PCoA plot
+
+```{r}
+renderPlotly({
+    data = data.frame(
+        x = distance_pcoa[[input$method]][,input$x],
+        y = distance_pcoa[[input$method]][,input$y],
+        Subj = microbiome$pdata$StudyID,
+        TX = microbiome$pdata$Treatment,
+        Day = microbiome$pdata$Timepoint
+    )
+    p = ggplot(data,aes(x=x, y=y, color = Subj, TX=TX, Day=Day)) +
+        geom_point(size=rel(3)) +
+        labs(x = str_c(input$x, "(", 
+                       round(pcoa_proportion_explained[input$x,input$method]*100),
+                       "% explained)"), 
+             y = str_c(input$y, "(", 
+                       round(pcoa_proportion_explained[input$y,input$method]*100),
+                       "% explained)")) +
+        theme_bw() +
+        theme(
+            axis.title = element_text(size=13),
+            axis.text = element_text(size=11, colour = 'black'),
+            panel.background = element_rect(color = 'black'),
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip=c('Subj','TX','Day'))
+})
+```
+
+Column 
+-------------------------------------
+    
+### Heatmap
+
+```{r}
+output$heatmap = renderD3heatmap({
+    d3heatmap(distance_matrics[[input$method]])
+}) 
+d3heatmapOutput("heatmap",width="100%")
+```

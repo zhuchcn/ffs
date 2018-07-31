@@ -1,0 +1,99 @@
+---
+title: "Food Data"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/index.html", 
+                align: left }
+        source_code: embed
+runtime: shiny
+---
+
+<style>
+.datatables{
+overflow: auto;
+}
+</style>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'DT','data.table',
+         'limma')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../../data/food_data.Rdata")
+```
+
+Raw Data
+===================================
+
+###
+
+```{r}
+food_data %>%
+    column_to_rownames("Item Name") %>%
+    t %>% as.data.frame %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+Summarized
+===================================
+
+###
+
+```{r}
+food_data %>%
+    mutate(Food= str_split(`Item Name`, ",", n=2, simplify=T)[,1]) %>%
+    melt(id.var = c("Item Name","Food"),
+         variable.name = "Sample",
+         value.name = "Wgt") %>% 
+    ddply(.(Food, Sample), summarise,
+          Wgt = sum(Wgt)) %>% 
+    dcast(Food~Sample, value.var = "Wgt") %>%
+    column_to_rownames("Food") %>%
+    t %>% as.data.frame %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+Baseline Food
+=====================
+
+###
+
+```{r}
+load("../Rdata/blf_precalc.Rdata")
+blf_data %>%
+    t %>% as.data.frame %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```

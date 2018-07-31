@@ -1,0 +1,94 @@
+---
+title: "Microbiome PICRUSt Function"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('dplyr', 'plyr','stringr','reshape2','tibble','plotly', "DT",
+         'ggplot2','ggsci',"data.table","limma")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../Rdata/mcb_picrust.Rdata")
+```
+
+```{r}
+inputPanel(
+    selectInput("level","Select a Function Level",
+                choices = names(picrust), selected = "level3")
+)
+```
+
+Column
+-------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    p = data.frame(
+        fct = as.numeric(picrust[[input$level]][feature_selector(),]),
+        Subj = pdata$StudyID,
+        TX = pdata$Treatment,
+        Day = pdata$Timepoint
+    ) %>%
+        ggplot(aes(Day, fct, Subj=Subj, TX=TX)) +
+        geom_boxplot() +
+        geom_point(aes(color=Subj),size=2) +
+        geom_line(aes(group = Subj, color=Subj)) +
+        facet_grid(.~TX) +
+        scale_color_npg() +
+        labs(y=feature_selector()) +
+        theme_bw() +
+        theme(
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size=rel(1.5), color = 'black'),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            legend.position = 'none',
+            strip.text = element_text(size=15)
+        )
+    ggplotly(p)
+})
+```
+
+Column
+-------------------------------
+
+###
+
+```{r}
+limma_table = reactive({
+    limma_list[[input$level]] %>%
+    rownames_to_column("Feature") %>%
+    arrange(P.Value) %>%
+    sapply(function(col){
+        if(!is.numeric(col)) return(col)
+        round(col, 3)
+    }) %>% 
+    as.data.frame %>%
+    column_to_rownames("Feature")    
+})
+output$limma_table = renderDataTable(
+    limma_table(), 
+    selection = list(mode = "single", selected = 1),
+    server=T
+    )
+feature_selector = reactive({
+    rownames(limma_table())[input$limma_table_rows_selected]
+})
+dataTableOutput("limma_table")
+```

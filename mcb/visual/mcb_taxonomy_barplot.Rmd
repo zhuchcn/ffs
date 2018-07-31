@@ -1,0 +1,134 @@
+---
+title: "Microbiome Taxonomy Barplot"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+runtime: shiny 
+--- 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr','dplyr','stringr','reshape2','tibble', 'plotly',
+         'ggthemes','ggplot2','ggthemr')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r, load data and functions}
+#rm(list=ls())
+#setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/mcb')
+load('../../data/microbiome_and_metabolome.Rdata')
+```
+
+```{r}
+addTaxoLevelToFdata = function(data){
+    edata = data$edata
+    fdata = data$fdata
+    pdata = data$pdata
+    seqs = data$seqs
+    for(i in 1:7){
+        fdata[,i] = str_c(
+            tolower(strsplit(names(fdata)[i],'')[[1]][1]),
+            '_', fdata[,i]
+        )
+    }
+    return(list(edata=edata, fdata=fdata, pdata=pdata, seqs=seqs))
+}
+getTaxaBiNames = function(row,i=7) {
+    if(i==0) return('_;_')
+    if(is.na(row[i])){
+        getTaxaBiNames(row,i-1)
+    } else{
+        return(str_c(row[i-1],'; ',row[i]))
+    }
+}
+```
+
+```{r, cleaning}
+microbiome = addTaxoLevelToFdata(microbiome)
+taxa_bn = apply(microbiome$fdata,1,getTaxaBiNames)
+
+edata = microbiome$edata
+pdata = microbiome$pdata
+fdata = microbiome$fdata
+```
+
+```{r}
+taxaPlotGetDf = function(data, taxa='Phylum'){
+    edata = data$edata; fdata = data$fdata; pdata = data$pdata
+    
+    df = edata %>% 
+        rownames_to_column(var='FeatureID') %>% 
+        mutate(taxa = fdata[,taxa]) %>%
+        melt(c('FeatureID','taxa'), 
+             variable.name = 'SampleID',
+             value.name='Count') %>%
+        ddply(.(taxa,SampleID), plyr::summarize,
+              total_count = sum(Count)) %>%
+        ddply(.(SampleID), mutate,
+              abundence = total_count/sum(total_count)) %>%
+        dcast(SampleID~taxa, value.var='abundence') %>%
+        mutate(SubjID = factor(pdata$StudyID),
+               TX = factor(pdata$Treatment),
+               Day = factor(pdata$Timepoint))%>%
+        melt(c('SampleID','SubjID','TX','Day'),
+             variable.name = 'taxa',
+             value.name = 'abundence')
+    return(df)
+}
+
+taxaPlotly = function(data, taxa='Phylum'){
+    df = taxaPlotGetDf(data, taxa) %>% 
+        dcast(SampleID+SubjID+TX+Day~taxa, value.var = 'abundence')
+
+    featureNames = colnames(df)[-(1:4)]
+    
+    p = plot_ly(
+        data = df, x = with(df,interaction(Day, TX, SubjID)),
+        y = df[,featureNames[length(featureNames)]],
+        name = featureNames[length(featureNames)],
+        type = 'bar'
+    )
+    for(i in (length(featureNames)-1):1){
+        p = p %>% 
+            add_trace(y=df[,featureNames[i]], name=featureNames[i]) %>%
+            layout(barmode='stack')
+    }
+    p = p %>%
+        layout(
+            margin = list(l=20,r=20,b=30,t=8),
+            xaxis = list(
+                nticks = 5,
+                tickmode = 'array',
+                tickvals = seq(1.5,37.5,4),
+                ticktext = unique(df$SubjID))
+        )
+    return(p)
+}
+
+```
+
+```{r, cache=F}
+inputPanel(
+    selectInput('taxo_level', 'Select a taxonomy level',
+                choices = names(fdata), selected = names(fdata)[2])
+    # textInput('legend_number', label = 'Enter the number of legend to show: ',
+    #           value = '5'),
+)
+```
+
+### Chart 1
+
+```{r, cache = F}
+output$taxaPlotly = renderPlotly({
+    taxaPlotly(data = microbiome, taxa = input$taxo_level)
+})
+plotlyOutput("taxaPlotly")
+```
+

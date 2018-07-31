@@ -1,0 +1,77 @@
+---
+title: "Diet Correlation Scatterplot"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/hdl.html", align: left }
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'Hmisc',
+         'ggthemes','Biostrings','ggplot2','ggthemr','RColorBrewer')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("mcb_precalc_general.Rdata")
+```
+
+```{r}
+plotit = function(x, y, xlab, ylab){
+    df = data.frame(
+        x = x,
+        y = y,
+        Subj = factor(clinical_data$`Subject ID`),
+        TX = clinical_data$Treatment,
+        Day = clinical_data$Time
+    )
+    #df = df[!is.na(df$x) & !is.na(df$y),]
+    p = ggplot(df, aes(x=x, y=y)) +
+        geom_point(aes(color=Subj, TX=TX, Day=Day), size=rel(2)) +
+        stat_smooth(method='lm', formula = y~x) +
+        theme_bw() +
+        labs(title = str_c("r=",round(cor.test(x,y)$estimate, digit=3),
+                           ", p=",round(cor.test(x,y)$p.value,digit=3)),
+             x = xlab, y=ylab) +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip=c("Subj","TX","Day"))
+}
+```
+
+Column
+-------------------------------------
+    
+### Plasma Cholesterol Efflux
+
+```{r}
+plotit(
+    x = clinical_data$`Cholesterol Efflux Capacity (plasma,mo)`,
+    y = clinical_data$`HDL Cholesterol Efflux (mo, %)`,
+    xlab = "Cholesterol Efflux Capacity (plasma,mo)",
+    ylab = "HDL Cholesterol Efflux (mo, %)"
+)
+```
+
+Column
+-------------------------------------
+    
+### Normlized by HDL cholesterol
+
+```{r}
+plotit(
+    x = clinical_data[,'Cholesterol Efflux Capacity (plasma,mo)']/clinical_data[,'HDL-cholesterol (mg/dL)'], 
+    y = clinical_data$`HDL Cholesterol Efflux (mo, %)`,
+    xlab = "Cholesterol Efflux Capacity (plasma,mo) / HDL-cholesterol (mg/dL)",
+    ylab = "HDL Cholesterol Efflux (mo, %)"
+)
+```

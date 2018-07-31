@@ -1,0 +1,125 @@
+---
+title: "Glycopeptides Feature Boxplot"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/hdl.html", 
+                align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'DT',
+         'limma','ggthemes','ggplot2','ggthemr')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/hdl_structure_and_function/')
+load('../Rdata/glc_precalc.Rdata')
+```
+
+```{r}
+inputPanel(
+    selectInput("level", "Peptide or Glycan? ",
+                choices = names(glycopeptide), selected = "glycans")
+)
+```
+
+Column 
+-------------------------------------
+    
+### Boxplot
+
+```{r}
+featureBoxPlotGetDf = function(edata, pdata, feature_id){
+    # Construct the data table for plotting
+    df = melt(edata[feature_id,], 
+              value.name = 'Abundance', 
+              variable.name='SampleID') %>% 
+        mutate(Subj = pdata$Subj,
+               TX = pdata$TX,
+               Day = pdata$Day) %>%
+        column_to_rownames(var = 'SampleID')
+    
+    return(df)
+}
+
+featureBoxPlot = function(edata, pdata, feature_id){
+    # get the data
+    df = featureBoxPlotGetDf(edata = edata, pdata=pdata, feature_id = feature_id)
+    # make the plot
+    g = ggplot(df,aes(x = interaction(Day,TX),y=Abundance)) +
+        geom_boxplot() +
+        geom_point(aes(colour = Subj), size=3) +
+        geom_line(data = df[df$TX=='FF',], 
+                  aes(group=Subj, colour=Subj)) +
+        geom_line(data = df[df$TX=='Med',], 
+                  aes(group=Subj, colour=Subj)) + 
+        theme_hc() +
+        scale_color_hc() +
+        theme(
+            panel.background = element_blank(),
+            panel.grid = element_blank(),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size=rel(1.5), color = 'black'),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            legend.position = 'none',
+            strip.text = element_text(size=15))
+    return(g)
+}
+```
+
+```{r plot1 featureBoxPlot}
+renderPlotly({
+    data = glycopeptide[[input$level]]
+    featureBoxPlot(data$edata, data$pdata, feature_selected()) %>%
+        ggplotly
+})
+```
+
+
+Column
+-------------------------------------
+
+### Stats Table
+
+```{r}
+stats_table = reactive({
+    limma_result[[input$level]] %>%
+    rownames_to_column(var = "Feature") %>% 
+    arrange(P.Value)  %>%
+    mutate(
+        logFC = round(logFC, digits = 3),
+        AveExpr = round(AveExpr, digits = 3),
+        t = round(t, digits = 3),
+        P.Value = round(P.Value, digits = 3),
+        adj.P.Val = round(adj.P.Val, digits = 3),
+        B = round(B, digits = 3)
+    ) %>%
+    column_to_rownames(var = "Feature")
+}) 
+
+output$stats_table = renderDataTable(
+    stats_table(), 
+    selection = list(mode = "single", selected = 1),
+    server=T
+    )
+
+feature_selected = reactive({
+    rownames(stats_table())[input$stats_table_rows_selected]
+})
+
+dataTableOutput("stats_table")
+```
+

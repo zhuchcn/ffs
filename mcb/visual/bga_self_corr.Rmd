@@ -1,0 +1,110 @@
+---
+title: "Biogenic Amines vs Self"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+runtime: shiny 
+---
+<style>
+.datatables{
+    overflow: auto
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', "DT",
+         'limma','ggsci','ggplot2','ggsci',"heatmaply")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../Rdata/bga_precalc.Rdata')
+```
+
+Scatterplot
+===================
+
+```{r}
+inputPanel(
+    selectInput("feature", "Select a Biogenic Amine:",
+                choices = rownames(edata), selected = rownames(edata)[1])
+)
+```
+
+Column
+----------------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        feature_1 = as.numeric(edata[input$feature,]),
+        feature_2 = as.numeric(edata[feature_selector(),]),
+        Subj = pdata$Subject,
+        TX = pdata$TX,
+        Day = pdata$Day
+    ) 
+    p = ggplot(df, aes(feature_1, feature_2)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=2) +
+        stat_smooth(method = "lm") +
+        scale_color_npg() +
+        theme_bw() +
+        labs(x = input$feature_1, y=feature_selector()) +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p)
+})
+```
+
+Column
+----------------------------------------
+
+### corr table
+
+```{r}
+corr_table = reactive({
+    self_corr[[input$feature]] %>%
+        rownames_to_column("Feature") %>%
+        arrange(pearson.pvalue) %>%
+        sapply(function(col){
+            if(!is.numeric(col)){
+                return(col)
+            }
+            return(round(col, 3))
+        }) %>%
+        as.data.frame %>%
+        column_to_rownames("Feature")
+})
+output$corr_table = renderDataTable(
+    corr_table(),
+    selection = list(mode = "single", selected = 1),
+    server=T
+)
+feature_selector = reactive({
+    rownames(corr_table())[input$corr_table_rows_selected]
+})
+dataTableOutput("corr_table")
+```
+
+Heatmap
+===================
+
+###
+
+```{r}
+heatmap_data = sapply(self_corr, function(sublist) sublist[,"pearson.r"]) %>%
+    t
+heatmaply(heatmap_data, colors = rev(RdBu(256)), showticklabels = c(F,T))
+
+```

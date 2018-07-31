@@ -1,0 +1,237 @@
+---
+title: "HDL Function & HDL Proteins"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/hdl.html", 
+                align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'DT',
+         'data.table','limma','ggthemes','ggplot2','ggthemr')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/hdl_structure_and_function/')
+load('../Rdata/fct_precalc.Rdata')
+```
+
+Differential Abundance
+===================================================
+
+Column 
+-------------------------------------
+    
+### Boxplot
+
+```{r plot1 featureBoxPlot}
+renderPlotly({
+    df = data.frame(
+        Value = fct_data[,feature_selected_1()],
+        TX = pdata$TX,
+        Day = pdata$Day,
+        Subj = pdata$Subj
+    )
+p = ggplot(df, aes(x = Day, y = Value)) +
+    geom_boxplot() +
+    geom_point(aes(colour = Subj), size=3) +
+    geom_line(aes(group = Subj, colour = Subj)) +
+    facet_grid(.~TX) +
+    labs(x = "", y="") +
+    theme_hc() +
+    scale_color_hc() +
+    theme(
+        legend.position = "none",
+        axis.text.x = element_text(size=rel(1.5), color = 'black'),
+        axis.ticks.x = element_blank(),
+        axis.ticks.y = element_blank(),
+        strip.text = element_text(size=15)
+    )
+ggplotly(p, toolkit = "all")
+})
+```
+
+
+Column
+-------------------------------------
+
+### Stats Table
+
+```{r}
+lm_table = lm_fit %>%
+        rownames_to_column("Feature") %>%
+        arrange(`Pr(>|t|)`) %>%
+        mutate(
+            Estimate = round(Estimate, digits = 3),
+            `Std. Error` = round(`Std. Error`, digits = 3),
+            `t value` = round(`t value`, digits = 3),
+            `Pr(>|t|)` = round(`Pr(>|t|)`, digits = 3)
+        )%>%
+        column_to_rownames("Feature")
+output$lm_table = renderDataTable(
+    lm_table, 
+    selection = list(mode = "single", selected = 1),
+    server=T
+    )
+feature_selected_1 = reactive({
+    rownames(lm_table)[input$lm_table_rows_selected]
+})
+dataTableOutput("lm_table")
+```
+
+vs HDL Functions
+===================================================
+
+```{r}
+inputPanel(
+    selectInput("fct_var", "Select a Function Variable",
+                choices = names(fct_data), selected = names(fct_data)[1])
+)
+```
+
+Column
+---------------------------------------------------
+
+### Scatter Plot
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        covar = fct_data[,input$fct_var],
+        Value = fct_data[,feature_selected_2()],
+        Subj = pdata$Subj,
+        TX = pdata$TX,
+        Day = pdata$Day
+    )
+
+    p = ggplot(df, aes(x = Value, y = covar)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=rel(2)) +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            x=feature_selected_2(),
+            y=input$fct_var
+        )+
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip="all")
+})
+```
+
+Column
+---------------------------------------------------
+
+### Stats Table
+
+```{r}
+fct_table = reactive({
+    fct_corr[[input$fct_var]] %>%
+        setnames(c("pearson.r", "pearson.p", "spearman.r", 
+                   "spearman.p", "kendall.t", "kendall.p")) %>% 
+        rownames_to_column(var = "Feature") %>%
+        arrange(pearson.p)  %>%
+        mutate(
+            pearson.r = round(pearson.r, digits = 3),
+            pearson.p = round(pearson.p, digits = 3),
+            spearman.r = round(spearman.r, digits = 3),
+            spearman.p = round(spearman.p, digits = 3),
+            kendall.t = round(kendall.t, digits = 3),
+            kendall.p = round(kendall.p, digits = 3)
+        ) %>%
+        column_to_rownames(var = "Feature")
+})
+output$fct_table = renderDataTable(
+    fct_table(), 
+    selection = list(mode = "single", selected = 1),
+    server=T
+    )
+feature_selected_2 = reactive({
+    rownames(fct_table())[input$fct_table_rows_selected]
+})
+dataTableOutput("fct_table")
+```
+
+vs Diet
+===================================================
+
+```{r}
+inputPanel(
+    selectInput("diet_var","Select a Diet Variable",
+                choices = names(diet_data), selected = names(diet_data)[1])
+)
+```
+
+Column
+---------------------------------------------------
+
+### Scatter Plot
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        Dietary_Value = diet_data[,input$diet_var],
+        Value = fct_data[,feature_selected_3()],
+        Subj = pdata$Subj,
+        TX = pdata$TX,
+        Day = pdata$Day
+    )
+    p = ggplot(df, aes(x = Dietary_Value, y = Value)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=rel(2)) +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            x=input$diet_var,
+            y=feature_selected_3()
+        )+
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip="all")
+})
+```
+
+Column
+---------------------------------------------------
+
+### Stats Table
+
+```{r}
+diet_table = reactive({
+    diet_corr[[input$diet_var]] %>%
+        setnames(c("pearson.r", "pearson.p", "spearman.r", 
+                   "spearman.p", "kendall.t", "kendall.p")) %>% 
+        rownames_to_column(var = "Feature") %>%
+        arrange(pearson.p)  %>%
+        mutate(
+            pearson.r = round(pearson.r, digits = 3),
+            pearson.p = round(pearson.p, digits = 3),
+            spearman.r = round(spearman.r, digits = 3),
+            spearman.p = round(spearman.p, digits = 3),
+            kendall.t = round(kendall.t, digits = 3),
+            kendall.p = round(kendall.p, digits = 3)
+        ) %>%
+        column_to_rownames(var = "Feature")
+})
+output$diet_table = renderDataTable(
+    diet_table(), 
+    selection = list(mode = "single", selected = 1),
+    server=T
+    )
+feature_selected_3 = reactive({
+    rownames(diet_table())[input$diet_table_rows_selected]
+})
+dataTableOutput("diet_table")
+```

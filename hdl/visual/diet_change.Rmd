@@ -1,0 +1,179 @@
+---
+title: "Effect of the Change of Nutrient Compoent to HDL"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/hdl.html", 
+                align: left }
+        source_code: embed
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'DT','data.table',
+         'limma','ggthemes','ggplot2','ggsci')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/hdl_structure_and_function/')
+load('../Rdata/diet_change_precalc.Rdata')
+```
+
+vs Lipidome
+========================================
+
+
+```{r}
+inputPanel(
+    selectInput("diet1", "Select a Diet Var:",
+                choices = colnames(diet_data), selected = "FatCals (kcal)"),
+    selectInput("level", "Select a Lipidome Level: ",
+                choices = names(lpd_data), selected = names(lpd_data)[1]),
+    selectInput("normal", "Select a Normalize Method: ",
+                choices = names(lpd_data$class), selected = "Proportion")
+)
+```
+
+Column
+----------------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        diet = diet_data[,input$diet1],
+        lpd = as.numeric(lpd_data[[input$level]][[input$normal]][feature_selector_1(),]),
+        Subj = pdata$Subj,
+        TX = pdata$TX
+    )
+    p = ggplot(df, aes(diet, lpd)) +
+        geom_point(aes(colour = Subj, TX=TX), size = 2) +
+        stat_smooth(method = "lm") +
+        labs(
+            x = input$diet1,
+            y = feature_selector_1()
+        ) +
+        scale_color_npg() +
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+})
+```
+
+Column
+----------------------------------------
+
+###
+
+```{r}
+lpd_table = reactive({
+    lpd_corr[[input$level]][[input$normal]][[input$diet1]] %>%
+        setnames(c("pearson.r", "pearson.p", "spearman.r", 
+                   "spearman.p", "kendall.t", "kendall.p")) %>% 
+        rownames_to_column(var = "Feature") %>%
+        arrange(pearson.p)  %>%
+        mutate(
+            pearson.r = round(pearson.r, digits = 3),
+            pearson.p = round(pearson.p, digits = 3),
+            spearman.r = round(spearman.r, digits = 3),
+            spearman.p = round(spearman.p, digits = 3),
+            kendall.t = round(kendall.t, digits = 3),
+            kendall.p = round(kendall.p, digits = 3)
+        ) %>%
+        column_to_rownames(var = "Feature")
+})
+output$lpd_table = renderDataTable(
+    lpd_table(),
+    selection = list(mode = "single", selected = 1),
+    server=T
+)
+feature_selector_1 = reactive({
+    rownames(lpd_table())[input$lpd_table_rows_selected]
+})
+dataTableOutput("lpd_table")
+```
+
+vs Function
+========================================
+
+
+```{r}
+inputPanel(
+    selectInput("diet2", "Select a Diet Var:",
+                choices = colnames(diet_data), selected = "FatCals (kcal)")
+)
+```
+
+Column
+----------------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        diet = diet_data[, input$diet2],
+        var = fct_data[,feature_selector_2()],
+        Subj = pdata$Subj,
+        TX = pdata$TX
+    )
+    p = ggplot(df, aes(diet, var)) +
+        geom_point(aes(colour = Subj, TX = TX), size = 3) +
+        stat_smooth(method = "lm") +
+        labs(
+            x = input$diet2,
+            y = feature_selector_2()
+        ) +
+        scale_color_npg()+
+        theme_bw()+
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p)
+})
+```
+
+Column
+----------------------------------
+
+### 
+
+```{r}
+fct_table = reactive({
+    fct_corr[[input$diet2]] %>%
+        setnames(c("pearson.r", "pearson.p", "spearman.r", 
+                   "spearman.p", "kendall.t", "kendall.p")) %>% 
+        rownames_to_column(var = "Feature") %>%
+        arrange(pearson.p)  %>%
+        mutate(
+            pearson.r = round(pearson.r, digits = 3),
+            pearson.p = round(pearson.p, digits = 3),
+            spearman.r = round(spearman.r, digits = 3),
+            spearman.p = round(spearman.p, digits = 3),
+            kendall.t = round(kendall.t, digits = 3),
+            kendall.p = round(kendall.p, digits = 3)
+        ) %>%
+        column_to_rownames(var = "Feature")
+})
+output$fct_table = renderDataTable(
+    fct_table(),
+    selection = list(mode = "single", selected = 1),
+    server=T
+)
+feature_selector_2 = reactive({
+    rownames(fct_table())[input$fct_table_rows_selected]
+})
+dataTableOutput("fct_table")
+```

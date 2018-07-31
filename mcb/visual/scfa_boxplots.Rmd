@@ -1,0 +1,93 @@
+---
+title: "Short Chain Fatty Acids Boxplots"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', "DT",
+         'limma','ggthemes','Biostrings','ggplot2','ggthemr')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+#setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/R')
+load('../../data/microbiome_and_metabolome.Rdata')
+```
+
+```{r}
+design = model.matrix(data=biogenic_amines$pdata, ~TX + Day + TX*Day + Subject + 1)
+fit = lmFit(t(scfa_data), design)
+fit_ebayes = eBayes(fit)
+fit_top = topTable(fit_ebayes, coef=13, number = ncol(scfa_data), p.value=13, 
+                   sort.by='none')
+```
+
+```{r}
+inputPanel(
+    selectInput("scfa", "Select a Short Chain FA:",
+                choices = colnames(scfa_data), selected = "Butyric acid")
+)
+```
+
+```{r}
+featureBoxplot = function(edata, pdata, feature_name){
+    df = data.frame(
+        conc = edata[,feature_name],
+        Subj = pdata$Subject,
+        TX = pdata$TX,
+        Day = pdata$Day
+    )
+    g = ggplot(df,aes(x = interaction(Day,TX),y=conc)) +
+        geom_boxplot() +
+        geom_point(aes(colour = Subj), size=3) +
+        geom_line(data = df[df$TX=='FF',], 
+                  aes(group=Subj, colour=Subj)) +
+        geom_line(data = df[df$TX=='Med',], 
+                  aes(group=Subj, colour=Subj)) + 
+        theme_hc() +
+        scale_color_hc() +
+        theme(
+            panel.background = element_blank(),
+            panel.grid = element_blank(),
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size=rel(1.5), color = 'black'),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            legend.position = 'none',
+            strip.text = element_text(size=15))
+    return(g)
+}
+```
+
+Column 
+-------------------------------------
+    
+### Boxplot
+
+```{r}
+renderPlotly({
+    ggplotly(featureBoxplot(scfa_data, biogenic_amines$pdata, input$scfa))
+})
+```
+
+Column 
+-------------------------------------
+    
+### Summary Table
+
+```{r}
+datatable(fit_top) %>%
+    formatRound(columns=c("t","P.Value","adj.P.Val","B"), digits = 4)
+```

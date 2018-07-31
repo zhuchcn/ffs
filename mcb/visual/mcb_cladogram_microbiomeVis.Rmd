@@ -1,0 +1,234 @@
+---
+title: "FFS Microbiome Cladogram"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+#rmarkdown::run('mcb_cladogram.Rmd')
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'data.tree',
+         'ggthemes','Biostrings','ggplot2','ggsci','ggtree','ape',
+         'microbiomeViz', "cowplot","treeio")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/microbiome_and_metabolome/')
+load('../../Rdata/mcb_precalc.Rdata')
+```
+
+```{r}
+addTaxoLevelToFdata = function(fdata){
+    for(i in 1:7){
+        fdata[,i] = str_c(
+            tolower(strsplit(names(fdata)[i],'')[[1]][1]),
+            '__', fdata[,i]
+        )
+    }
+    return(fdata)
+}
+fdata = addTaxoLevelToFdata(fdata)
+fdata = rownames_to_column(fdata, var='FeatureID') %>%
+    arrange(Kingdom, Phylum, Class, Order, Family, Genus, Species) %>%
+    column_to_rownames(var='FeatureID')
+```
+
+```{r}
+# get full path for each elvel
+getFullPathEachLevel = function(fdata){
+    for(i in 1:ncol(fdata)){
+        if(i == 1){
+            prefix = rep('r__Root',nrow(fdata))
+        }else{
+            prefix = fdata[,i-1]
+        }
+        for(j in 1:nrow(fdata)){
+            if(!is.na(fdata[j,i])){
+                fdata[j,i] = paste(prefix[j],fdata[j,i], sep='|')
+            }
+        }
+    }
+    return(fdata)
+}
+fdata = getFullPathEachLevel(fdata)
+getFullPathAllLevels = function(fdata){
+    V1 = "r__Root"
+    for(col in fdata){
+        V1 = c(V1, unique(col[!is.na(col)]))
+    }
+    return(V1)
+}
+tree.table = data.frame(
+    V1 = getFullPathAllLevels(fdata),
+    stringsAsFactors = FALSE
+)
+tree.table$level = str_count(tree.table$V1, '\\|')
+```
+
+```{r}
+# tree.table$V2 = NA
+# tree.table$V2[1] = 100
+# for(i in 2:nrow(tree.table)){
+#     feature_name = str_split(tree.table$V1[i], "\\|", simplify=T)
+#     feature_name = feature_name[,tree.table$level[i]+1]
+#     feature_name = str_split(feature_name, "\\_\\_", simplify=T)[,2]
+#     tree.table[i,'V2'] = mean(edata_list$proportion[[tree.table$level[i]]][feature_name,])
+# }
+tree.table$V2 = 5
+```
+
+
+```{r}
+parseMetaphlanTSV2 <- function(tax.profile, index=1, header=FALSE, delimiter='\\|', node.size.scale=1, node.size.offset=1){
+    if (is.character(tax.profile)) {
+        taxtab <- read.table(tax.profile, sep='\t', stringsAsFactors=FALSE, header=header)
+    }else{
+        taxtab <- tax.profile
+    }
+    names(taxtab)[index] <- 'tax'
+    names(taxtab)[-index] <- 'rel_abun'
+    #taxtab <- taxtab %>% dplyr::slice(-grep('unclassified', .[,index]))
+    tax_chars <- c('r', 'k', 'p', 'c', 'o', 'f', 'g', 's', 't')
+    tax_split <- strsplit(taxtab$tax, delimiter)    ## split into different taxonomy levels
+    child <- vapply(tax_split, tail, n=1, '')
+    tax_class <- do.call(rbind, strsplit(child, '__'))[,1]
+    parent <- vapply(tax_split, function(x) ifelse(length(x)>1, x[length(x)-1], 'root'), '')
+    isTip <- !child %in% parent
+    index <- c()
+    index[isTip] <- 1:sum(isTip)
+    index[!isTip] <- (sum(isTip)+1):length(isTip)
+    ## tips comes first
+    mapping <- data.frame(node=index, row.names=child, isTip, taxaAbun=taxtab$rel_abun)
+    edges <- cbind(mapping[parent,]$node, mapping$node)
+    edges <- edges[!is.na(edges[,1]),]
+
+    a <- node.size.scale
+    b <- node.size.offset
+    mapping$nodeSize <- a*log(mapping$taxaAbun) + b
+    mapping$nodeClass <- factor(tax_class, levels = rev(tax_chars))
+
+    mapping <- mapping[order(mapping$node),]
+
+    node.label <- rownames(mapping)[!mapping$isTip]
+    phylo <- structure(list(edge = edges,
+                            node.label = node.label,
+                            tip.label = rownames(mapping[mapping$isTip,]),
+                            edge.length=rep(1, nrow(edges)),
+                            Nnode = length(node.label)
+                            ),
+                       class = "phylo")
+
+    d <- mapping %>% select_(~-isTip)
+    treedata(phylo = phylo, data = as_data_frame(d))
+}
+
+clade.anno2 <- function(gtree, anno.data){
+    hilight.color <- anno.data$color
+    node_list <- anno.data$node
+    node_ids <- (gtree$data %>% filter(label %in% node_list ))$node
+    for(i in 1:length(node_ids)){
+        n <- node_ids[i]
+        color <- hilight.color[i]
+        mapping <- gtree$data %>% filter(node == n)
+        lab <- mapping$label
+        angle <- mapping$angle
+        angle <- ifelse(angle>180, angle+90, angle-90)
+        gtree <-
+            gtree + geom_hilight(node=n, fill=color, alpha=0.3, extend=1)
+    }
+    gtree
+}
+
+```
+
+```{r}
+tree.table = tree.table[,c('V1','V2')]
+tr =  parseMetaphlanTSV(tree.table, index=1, header=FALSE, delimiter = '\\|')
+tr2 = parseMetaphlanTSV2(tree.table)
+p = tree.backbone(tr2,size=1)
+
+```
+
+```{r}
+anno_nodes = NULL
+anno_color = NULL
+for(i in 2:7){
+    limma_table = Differential_Abundance$limma[[i]]
+    feature_2_add = rownames(limma_table[limma_table$P.Value <= 0.05,])
+    color_2_add = ifelse(
+        limma_table[feature_2_add,"logFC"] >=0,
+        pal_lancet()(9)[1],pal_lancet()(9)[2]
+    )
+    level = names(Differential_Abundance$limma)[i]
+    feature_2_add = str_c(
+        tolower(strsplit(level,"")[[1]][1]),
+        "__", feature_2_add
+    )
+    anno_nodes = c(anno_nodes, feature_2_add)
+    anno_color = c(anno_color, color_2_add)
+}
+
+anno_label = character(length = nrow(p$data))
+names(anno_label) = p$data$label
+anno_label[anno_nodes] = as.character(1:27)
+
+anno.data = data.frame(
+    node = anno_nodes, color = anno_color, stringsAsFactors = F
+)
+
+
+
+p = clade.anno2(p, anno.data)+ 
+    geom_nodelab(aes(subset=(label %in% anno_nodes), label = anno_label), 
+                 hjust=0.5, geom="label", alpha = 0.7)
+anno.data = anno.data %>%
+    mutate(x = 1,
+           y = 27:1,
+           label = str_c(1:27, ": ", node))
+
+mysize = 5
+anno_legend = ggplot(anno.data) +
+    geom_text(aes(x=x, y=y, label=label), hjust=0, size=mysize) +
+    scale_x_continuous(limits = c(1,1.5)) +
+    theme_bw() +
+    theme(
+        axis.line = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        plot.margin = margin(0,0,20,0, "mm")
+    )
+
+color_legend = ggplot() +
+    geom_point(aes(x=1,y=2), color=pal_lancet()(9)[1], size=mysize)  +
+    geom_text(aes(x=2, y=2), label="Med", size=mysize) +
+    geom_point(aes(x=1,y=1), color=pal_lancet()(9)[2], size=mysize)  +
+    geom_text(aes(x=2, y=1), label="FF", size=mysize) +
+    scale_x_continuous(limits=c(0.5,5)) +
+    scale_y_continuous(limits = c(0.5,5)) +
+    theme_bw() +
+    theme(
+        axis.line = element_blank(),
+        axis.title = element_blank(),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_blank(),
+        plot.margin = margin(0,10,0,0,"mm")
+    )
+
+legend = plot_grid(color_legend, anno_legend, nrow=2, rel_heights = c(1,4))
+```
+
+```{r, fig.height=9, fig.width=12}
+plot_grid(p, legend, rel_widths = c(4,1))
+```

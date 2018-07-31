@@ -1,0 +1,150 @@
+---
+title: "HDL-C vs Lipidome Cholesterol"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/hdl.html", 
+                align: left }
+        source_code: embed
+        orientation: rows
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'DT','data.table',
+         'limma','ggthemes','ggplot2','ggsci')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/hdl_structure_and_function/')
+load("../Rdata/lpd_precalc.Rdata")
+load('../../data/hdl_structure_and_function.Rdata')
+edata = lipidome$edata
+fdata = lipidome$fdata
+pdata = lipidome$pdata
+```
+
+Row
+-------------------------------
+
+### Concentration (mg/dL) vs HDL-C
+
+```{r}
+# class concentration in M
+# unit: mmol/ml or mol/L (M)
+edata_class = edata %>% 
+    rownames_to_column("Feature")%>%
+    mutate(
+        mw = fdata$mol_wt,
+        class = fdata$class
+        )  %>%
+    melt(id.var = c("Feature","mw", "class"),
+         variable.name = "Sample",
+         value.name = "conc") %>%
+    mutate(conc = conc/ (mw * 10^3)) %>%
+    ddply(.(class, Sample), summarise,
+          conc = sum(conc)) %>%
+    dcast(class ~ Sample, value.var = "conc") %>%
+    column_to_rownames("class")
+
+lpd_c = as.numeric(edata_class["CE",] + edata_class["Cholesterol",]) * 386.6545 * 1000/10
+
+df = data.frame(
+    lpd_c = lpd_c ,
+    hdl_c = clinical_data$`HDL-cholesterol (mg/dL)`,
+    Subj = pdata$Subj,
+    TX = pdata$TX,
+    Day = pdata$Day
+)
+
+# corr test
+corr = cor.test(df$hdl_c, df$lpd_c)
+
+p = ggplot(df, aes(hdl_c, lpd_c)) +
+    geom_point(aes(colour = Subj, TX=TX, Day = Day), size=2) +
+    stat_smooth(method = "lm") +
+    labs(
+        x = "HDL-cholesterol (mg/dL)",
+        y = "Lipidome Total Chol (mg/dl)",
+        title = str_c(
+            "HDL-C vs Lipidome Chol\n",
+            "P=", format(corr$p.value, scientific = T, digits = 3),
+            ", R=", round(corr$estimate, 3))
+    ) +
+    scale_color_npg() +
+    theme_bw()
+ggplotly(p)
+```
+
+### Concentration (mg/dL) vs Total Chol
+
+```{r}
+df = data.frame(
+    lpd_c = lpd_c ,
+    total_c = clinical_data$`Total Cholesterol (mg/dL)`,
+    Subj = pdata$Subj,
+    TX = pdata$TX,
+    Day = pdata$Day
+)
+
+# corr test
+corr = cor.test(df$total_c, df$lpd_c)
+
+p = ggplot(df, aes(total_c, lpd_c)) +
+    geom_point(aes(colour = Subj, TX=TX, Day = Day), size=2) +
+    stat_smooth(method = "lm") +
+    labs(
+        x = "Total Cholesterol (mg/dL)",
+        y = "Lipidome Total Chol (mg/dl)",
+        title = str_c(
+            "Total Chol vs Lipidome Chol\n",
+            "P=", format(corr$p.value,  digits = 3),
+            ", R=", round(corr$estimate, 3))
+    ) +
+    scale_color_npg() +
+    theme_bw()
+ggplotly(p)
+```
+
+Column
+-------------------------------
+
+### Proportion vs HDL-C
+
+```{r}
+df = data.frame(
+    lpd_c = as.numeric(edata_list$class$Proportion["CE",] + edata_list$class$Proportion["Cholesterol",]),
+    hdl_c = clinical_data$`HDL-cholesterol (mg/dL)`,
+    Subj = pdata$Subj,
+    TX = pdata$TX,
+    Day = pdata$Day
+)
+
+corr = cor.test(df$hdl_c, df$lpd_c)
+
+p = ggplot(df, aes(hdl_c, lpd_c)) +
+    geom_point(aes(colour = Subj, TX=TX, Day = Day), size=2) +
+    stat_smooth(method = "lm") +
+    labs(
+        x = "HDL-cholesterol (mg/dL)",
+        y = "Lipidome Total Chol (%)",
+        title = str_c(
+            "HDL-C vs Lipidome Chol (%)\n",
+            "P=", format(corr$p.value, digits = 3),
+            ", R=", round(corr$estimate, 3))
+    ) +
+    scale_color_npg() +
+    theme_bw()
+ggplotly(p)
+```
+
+###

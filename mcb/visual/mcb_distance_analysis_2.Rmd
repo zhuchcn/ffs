@@ -1,0 +1,97 @@
+---
+title: "Microbiome Projection Plot"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('dplyr', 'plyr','stringr','reshape2','tibble','plotly', "DT",
+         'ggplot2','ggsci',"data.table", "phyloseq", "ape")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../Rdata/mcb_precalc.Rdata")
+tree = read_tree("../qiime2_diversity/rooted_tree/tree.nwk")
+tree$tip.label = str_c("MCB", tree$tip.label)
+```
+
+```{r}
+inputPanel(
+    numericInput("cutoff", "Input a P value cutoff",
+              value = 0.1, min=0, max=1, step=0.05),
+    selectInput("distance", "Select a Distance Method",
+                choices = c("unifrac","wunifrac","dpcoa","jsd"),
+                selected = "wunifrac"),
+    selectInput("plot", "Select a Plot Method",
+                choices = c("DCA", "CCA", "RDA", "CAP", "DPCoA", "NMDS", "PCoA", "DPCoA"),
+                selected = "PCoA")
+)
+```
+
+```{r}
+otumat = edata_list$proportion$Feature %>%
+    t %>% as.data.frame %>%
+    mutate(Subj = pdata$StudyID, 
+           TX = pdata$Treatment, 
+           Day = pdata$Timepoint) %>%
+    melt(id.var = c("Subj","TX","Day"),
+           variable.name = "Feature", value.name = "Abundance") %>%
+    dcast(Feature + Subj + TX ~ Day, value.var = "Abundance") %>% 
+    mutate(change = (Post - Pre + 1)/2,
+           sample = str_c(Subj, TX, sep="")) %>%
+    dcast(Feature ~ sample, value.var = "change") %>%
+    column_to_rownames("Feature")
+
+taxmat = fdata[rownames(otumat),]
+OTU = otu_table(otumat, taxa_are_rows = T)
+TAX = tax_table(as.matrix(taxmat))
+
+sample_data = data.frame(
+    Subj = str_sub(colnames(otumat), start=1, end = 3) %>% as.factor,
+    TX = str_sub(colnames(otumat), start=4, end=6) %>% as.factor
+)
+rownames(sample_data) = colnames(otumat)
+sample_data = sample_data(sample_data)
+
+physeq = phyloseq(OTU, TAX, sample_data, tree)
+```
+
+```{r}
+physeq_sub = reactive({
+    features = rownames(Differential_Abundance$limma$Feature)[Differential_Abundance$limma$Feature$P.Value <= input$cutoff]
+    prune_taxa(features, physeq)
+})
+```
+
+###
+
+```{r}
+renderPlotly({
+    p = plot_ordination(
+        physeq_sub(), 
+        ordinate(physeq_sub(), input$plot, distance = input$distance))
+
+    p = ggplot(p$data, aes(p$data[,1], p$data[,2], color = TX, Subj=Subj)) +
+        geom_point(size=3) +
+        scale_color_lancet() +z
+        labs(x=p$labels$x,
+             y=p$labels$y) +
+        theme_bw()+
+        theme(
+            legend.title = element_blank()
+        )
+    ggplotly(p)
+})
+```

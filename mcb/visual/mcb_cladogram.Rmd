@@ -1,0 +1,232 @@
+---
+title: "FFS Microbiome Cladogram"
+author: "Chenghao Zhu"
+date: "3/6/2018"
+output:
+    prettydoc::html_pretty:
+        theme: architect
+        highlight: github
+        toc: true
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'data.tree',
+         'ggthemes','Biostrings','ggplot2','ggthemr','networkD3',
+         'DESeq2','RColorBrewer')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+#rm(list=ls())
+#setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/microbiome_and_metabolome')
+load('../../Rdata/mcb_precalc_general.Rdata')
+load('../../Rdata/mcb_precalc_diff_abund.Rdata')
+load('../../Rdata/mcb_precalc_diet_corr.Rdata')
+load('../../Rdata/mcb_precalc_diet_corr_normalized.Rdata')
+load('../../Rdata/mcb_precalc_clinical_corr.Rdata')
+load('../../Rdata/mcb_precalc_scfa_corr.Rdata')
+load('../../Rdata/mcb_precalc_bga_corr.Rdata')
+mcb_statistics = list(
+    "Differential Abundance" = differential_abundance,
+    "vs Dietary Data" = diet_corr, 
+    "vs Dietary Data normalized to totla Cals" = diet_corr_normalized, 
+    "vs Clinical Data" = clinical_corr,
+    "vs Short Chain Fatty Acids" = scfa_corr,
+    "vs Biogenic Amines" = bga_corr)
+```
+
+```{r}
+tree.table = fdata
+tree.table$pathString=with(tree.table, 
+                      paste('Root', Kingdom, Phylum, Class, Order, Family, 
+                            Genus, Species, sep='/'))
+tree.table$pathString = gsub('\\/NA','',tree.table$pathString)
+tree.table = tree.table[!duplicated(tree.table$pathString),]
+tree = as.Node(tree.table, 'table', 'pathString',sep='/')
+tree.list <- ToListExplicit(tree, unname = TRUE)
+
+all_nodes = tree$Get('level')
+all_nodes = all_nodes[order(all_nodes)]
+```
+
+```{r}
+## Color the node strokes and link by phylum.
+strokeVector = character(length=length(all_nodes))
+strokeVector[1:3] = 'black'
+all_phylums = unique(tree.table$Phylum)
+color_palette = c('brown','navy','orange','teal','magenta','maroon','cyan','green','lime','blue')
+for(i in 4:length(strokeVector)){
+    row_num = grep(names(all_nodes)[i], tree.table$pathString)[1]
+    phylum = tree.table$Phylum[row_num]
+    strokeVector[i] = color_palette[which(all_phylums == phylum)]
+}
+
+jsarray_stroke <-  paste0('["', paste(strokeVector, collapse = '", "'), '"]')
+strokeColourJS <- JS(paste0('function(d, i) { return ', jsarray_stroke, '[i]; }'))
+
+jsarray_link <- paste0('["', paste(strokeVector[-1], collapse = '", "'), '"]')
+linkColourJS <- JS(paste0('function(d, i) { return ', jsarray_link, '[i]; }'))
+```
+
+
+```{r}
+inputPanel(
+    selectInput("stat","Select a Statistic Type:",
+                choices = names(mcb_statistics), 
+                selected=names(mcb_statistics)[1], 
+                selectize = T),
+    # select a method. A statistic method for differential abundance, or a transform method for diet corr
+    uiOutput('methodSelect'),
+    # select a nutrient
+    uiOutput('covarSelect'),
+    uiOutput('coefSelect'),
+    conditionalPanel(
+        condition = "input.coef == 'pvalue' | input.coef == 'padj'| input.coef =='P.Value'| input.coef =='adj.P.Val'| input.coef =='pearson.pvalue'| input.coef == 'spearman.pvalue'| input.coef =='kendall.pvalue'",
+        sliderInput('cutoff','Select a cutoff',
+                    min=0, max=1, step=0.01, value=0.05)
+    ),
+    actionButton(inputId='ab1', label="Home Page", 
+                          icon = icon("th"), 
+                          onclick ="http://18.219.241.137:3838/ffs/website/_site/mcb.html")
+)
+
+```
+
+```{r}
+output$methodSelect = renderUI({
+    selectInput('method', 'Select a Method: ',
+                choices = names(mcb_statistics[[input$stat]]),
+                selected = names(mcb_statistics[[input$stat]])[1]
+                )
+})
+
+output$covarSelect = renderUI({
+    if(input$stat != "Differential Abundance"){
+        selectInput('covar', 'Select a Variable: ',
+                    choices = names(mcb_statistics[[input$stat]]$count),
+                    selected = names(mcb_statistics[[input$stat]]$count)[1])
+    }
+})
+
+stats = reactive({
+    stats = NULL
+    stats_list = mcb_statistics[[input$stat]][[input$method]]
+    if(input$stat != 'Differential Abundance'){
+        stats_list = stats_list[[input$covar]]
+    }
+    for(i in 1:7){
+        stats = rbind(stats, stats_list[[i]])
+    }
+    return(stats)
+})
+output$coefSelect = renderUI({
+    selectInput('coef', 'Select a Coefficient: ',
+                choices = names(stats()),
+                selected = names(stats())[1])
+})
+
+nodeColourJS = reactive({
+    
+    colorVector = character(length=length(all_nodes))
+    
+    if(input$coef %in% c("log2FoldChange","logFC","pearson.r","spearman.rho","kendall.tau")){
+        
+        myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+        
+        stat_values = stats()[,input$coef]
+        stat_values[is.na(stat_values)] = 0
+        max = max(stat_values)
+        min = min(stat_values)
+        
+        if(max > -min){
+            min = -max
+        }else{
+            max = -min
+        }
+        stat_cut = cut(stat_values,
+                       breaks=seq(min,max,length.out = 25),
+                       labels = 1:24, include.lowest = TRUE)
+        names(stat_cut) = rownames(stats())
+        
+        for(i in 1:length(colorVector)){
+            if(!names(all_nodes)[i] %in% names(stat_cut)) {
+                colorVector[i] = 'white'
+                next
+            }
+        colorVector[i] = myPalette(25)[stat_cut[names(all_nodes[i])]]
+        }
+    }else{
+        for(i in 1:length(colorVector)){
+            if(!names(all_nodes)[i] %in% rownames(stats())) {
+                colorVector[i] = 'white'
+                next
+            }
+            if(is.na(stats()[names(all_nodes)[i],input$coef])) {
+                colorVector[i] = 'white'
+                next
+            }
+            if(input$coef %in% c("pearson.r","spearman.rho","kendall.tau")){
+                if(stats()[names(all_nodes)[i],input$coef] >= input$cutoff){
+                    colorVector[i] = 'red'
+                }else colorVector[i] = 'white'
+            }
+            if(input$coef %in% c("pvalue", "padj", "P.Value","adj.P.Val",'pearson.pvalue', 'spearman.pvalue','kendall.pvalue')){
+                if(stats()[names(all_nodes)[i],input$coef] <= input$cutoff){
+                    colorVector[i] = 'red'
+                    }else colorVector[i] = 'white'
+                }
+        }
+        }
+    
+    jsarray_col <- paste0('["', paste(colorVector, collapse = '", "'), '"]')
+    nodeColourJS <- JS(paste0('function(d, i) { return ', jsarray_col, '[i]; }'))
+    return(nodeColourJS)
+})
+```
+
+```{r}
+renderRadialNetwork({
+    radialNetwork(tree.list, 
+                  nodeColour = nodeColourJS(), 
+                  linkColour = linkColourJS, 
+                  nodeStroke = strokeColourJS, 
+                  opacity=1)
+})
+
+renderPlot({
+    if(input$coef %in% c("log2FoldChange","logFC","pearson.r","spearman.rho","kendall.tau")){
+        myPalette <- colorRampPalette(rev(brewer.pal(11, "Spectral")))
+        
+        stat_values = stats()[,input$coef]
+        stat_values[is.na(stat_values)] = 0
+        max = max(stat_values)
+        min = min(stat_values)
+        
+        if(max > -min){
+            min = -max
+        }else{
+            max = -min
+        }
+    
+        par(mar=c(4,1,1,1))
+        image(matrix(seq(min,max,length.out = 25)), col = myPalette(25), 
+              yaxt="n", xaxt="n")
+        axis(1, at=c(0,0.25,0.5,0.75,1),
+             labels = c(
+                 round(min,2),
+                 round(min/2,2),
+                 0,
+                 round(max/2,2),
+                 round(max,2)))
+    }
+},width=300,height=100)
+
+```

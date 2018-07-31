@@ -1,0 +1,43 @@
+---
+title: "Clinical Data"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/index.html", 
+                align: left }
+        source_code: embed
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'DT','data.table',
+         'limma')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../../data/hdl_structure_and_function.Rdata")
+```
+
+###
+
+```{r}
+clinical_data[,-c(5,6,11,16,30,31)] %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+

@@ -1,0 +1,119 @@
+---
+title: "HDL ApoA1-lipid ratio vs Chol Efflux"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/hdl.html", 
+                align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'DT',
+         'data.table','limma','ggthemes','ggplot2','ggthemr')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/hdl_structure_and_function/')
+load('../Rdata/fct_precalc.Rdata')
+load('../Rdata/lpd_precalc.Rdata')
+```
+
+```{r}
+apoa1_data = edata_list$class$Concentration %>%
+    t %>% 
+    as.data.frame %>%
+    rownames_to_column("Sample_ID") %>%
+    mutate(
+        total_chol = CE + Cholesterol,
+        total_lipid = rowSums(select(., -(Sample_ID)))
+    ) %>%
+    column_to_rownames("Sample_ID") 
+apoa1_data = fct_data$`HDL ApoA1` / apoa1_data
+
+get_corr_coef = function(var, method, coef, covar = fct_data$`HDL Cholesterol Efflux (mo, %)`){
+    cor_test = cor.test(var,covar, method = method)
+    return(cor_test[[coef]])
+}
+
+cor_mat = apoa1_data %>%
+    rownames_to_column("sample_id") %>%
+    melt(id.var = c("sample_id"),
+         variable.name = "var", value.name = "value") %>%
+    ddply(.(var), summarise,
+          pearson.r = get_corr_coef(value,  "pearson", "estimate"),
+          pearson.p = get_corr_coef(value, "pearson", "p.value"),
+          spearman.r = get_corr_coef(value, "spearman", "estimate"),
+          spearman.p = get_corr_coef(value, "spearman", "p.value"),
+          kendall.t = get_corr_coef(value, "kendall", "estimate"),
+          kendall.p = get_corr_coef(value, "kendall", "p.value")
+          ) %>%
+    column_to_rownames("var")
+```
+
+Column
+-----------------------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        var = apoa1_data[,feature_selected()],
+        covar = fct_data$`HDL Cholesterol Efflux (mo, %)`,
+        Subj = pdata$Subj,
+        TX = pdata$TX,
+        Day = pdata$Day
+        ) 
+    p = ggplot(df, aes(x = var, y = covar)) +
+        geom_point(aes(colour = Subj)) +
+        stat_smooth(method = "lm") +
+        theme_bw() +
+        scale_color_hc() +
+        labs(x = str_c("ApoA1 / ",feature_selected()), 
+             y = "HDL Chol Efflux") +
+        theme(legend.position = "none")
+    ggplotly(p, toolkit = "all")
+})
+
+```
+
+Column
+-----------------------------------------------
+
+###
+
+```{r}
+cor_table = cor_mat %>%
+        rownames_to_column("Feature") %>%
+        arrange(pearson.p) %>%
+        mutate(
+            pearson.r = round(pearson.r, digits = 3),
+            pearson.p = round(pearson.p, digits = 3),
+            spearman.r = round(spearman.r, digits = 3),
+            spearman.p = round(spearman.p, digits = 3),
+            kendall.t = round(kendall.t, digits = 3),
+            kendall.p = round(kendall.p, digits = 3)
+        )%>%
+        column_to_rownames("Feature")
+output$cor_table = renderDataTable(
+    cor_table, 
+    selection = list(mode = "single", selected = 1),
+    server=T
+    )
+feature_selected = reactive({
+    rownames(cor_table)[input$cor_table_rows_selected]
+})
+dataTableOutput("cor_table")
+
+```

@@ -1,0 +1,17 @@
+.Rproj.user
+.Rhistory
+.pdf
+.ipynb_checkpoints
+raw_data/
+hdl/figures
+hdl/figures2
+hdl/individual_apps
+hdl/new
+kmeans_clustering
+mcb/ChemMine
+mcb/fmcsR
+mcb/graphes
+mcb/LEfSe_analysis
+mcb/picrust
+mcb/qiime2_diversity
+mcb/unfinished

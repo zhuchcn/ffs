@@ -1,0 +1,97 @@
+---
+title: "..."
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', "DT", "data.table",
+         'limma','ggthemes','Biostrings','ggplot2','ggsci', "ggrepel")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../Rdata/mcb_precalc.Rdata')
+pdata = setnames(
+    pdata,
+    old=c("Treatment", "Timepoint","StudyID"),
+    new=c("TX","Day","Subj")
+)
+```
+
+Column
+-------------------------------------
+
+###
+
+```{r}
+runLimma = function(data, design, coef){
+    fit = lmFit(data, design)
+    fit_ebayes = eBayes(fit)
+    fit_top = topTable(
+        fit_ebayes, coef=coef, number = nrow(data), sort.by = "none", p.value=coef
+    )
+    return(fit_top)
+}
+design = model.matrix(data = filter(pdata, TX == "FF"), ~ Day + Subj + 1)
+fit_FF = edata_list$proportion$Genus[,rownames(pdata)[pdata$TX == "FF"]] %>%
+    runLimma(design, 2)
+design = model.matrix(data = filter(pdata, TX == "Med"), ~ Day + Subj + 1)
+fit_Med = edata_list$proportion$Genus[,rownames(pdata)[pdata$TX == "Med"]] %>%
+    runLimma(design, 2)
+```
+
+```{r, fig.width=7, fig.height=4.8}
+df = data.frame(
+    Feature = rownames(fit_FF),
+    logFC_FF = fit_FF$logFC,
+    P.Value_FF = fit_FF$P.Value,
+    logFC_Med = fit_Med$logFC,
+    P.Value_Med = fit_Med$P.Value,
+    logFC_Mix = Differential_Abundance$limma$Genus$logFC,
+    P.Value_Mix = Differential_Abundance$limma$Genus$P.Value
+) %>%
+    mutate(
+        Sig = ifelse(
+            P.Value_Mix <= 0.05, "Mix",
+            ifelse((P.Value_FF <= 0.05 & P.Value_Med <= 0.05), "Both",
+                   ifelse(P.Value_FF <= 0.05, "FF",
+                          ifelse(P.Value_Med <= 0.05, "Med", "none")))
+        )
+    ) %>%
+    mutate(
+        Sig = factor(Sig, levels = c("Mix","Both","Med","FF","none"))
+        ) %>%
+    arrange(desc(Sig))
+
+ggplot(df, aes(x = logFC_FF, y = logFC_Med, Feature = Feature,
+               P.Value_FF = P.Value_FF, P.Value_Med = P.Value_Med,
+               P.Value_Mix = P.Value_Mix)) +
+    geom_label_repel(
+        data = df[df$Sig != "none",],
+        aes(label = Feature))+
+    geom_point(aes(color = Sig), size=4)  +
+    scale_color_manual(
+        values = c(
+            alpha(pal_npg()(9)[1:3], 0.8), 
+            alpha(pal_npg()(9)[4],0.5))) +
+    labs (
+        x = "Fold Change(log) by Fast Food",
+        y = "Fold Change(log) by Mediterranean"
+    ) +
+    theme_bw() +
+    theme(
+        legend.title = element_blank()
+    )
+```

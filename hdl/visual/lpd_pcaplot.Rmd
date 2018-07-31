@@ -1,0 +1,148 @@
+---
+title: "Lipidome PCA plot and Heatmap"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/hdl.html", 
+                align: left }
+        orientation: column
+        source_code: embed
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'DT','data.table',
+         'limma','ggthemes','ggplot2','ggthemr', 'heatmaply')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/hdl_structure_and_function/')
+load('../Rdata/lpd_precalc.Rdata')
+```
+
+```{r}
+limma_sub = limma_list$species$Proportion
+limma_sub = limma_sub[limma_sub$P.Value <= 0.05,]
+edata_sub = edata_list$species$Proportion[rownames(limma_sub),]
+edata3 = edata_sub %>%
+    t %>% as.data.frame %>%
+    mutate(
+        Day = pdata$Day,
+        TX = pdata$TX,
+        Subj = pdata$Subj
+    ) %>% 
+    melt(id.vars = c("Subj","TX","Day"),
+         variable.name = "Feature",
+         value.name = "intensity") %>% 
+    dcast(Subj + TX + Feature ~ Day,
+          value.var = "intensity") %>% 
+    mutate(Diff = Post - Pre) %>%
+    select(-c(Pre, Post)) %>%
+    dcast(Feature~Subj + TX,
+          value.var = "Diff") %>% 
+    column_to_rownames("Feature")
+
+
+absolute_scale = function(data){
+    apply(data, 1, function(row){
+        max = max(row)
+        min = min(row)
+        return((row-min)/(max-min)-0.5)
+    }) %>% t
+}
+edata3 = absolute_scale(edata3)
+```
+
+Column
+--------------------------------------
+
+### pca plot
+
+```{r}
+pca = prcomp(t(edata3))
+
+data = data.frame(
+    PC1 = pca$x[,1],
+    PC2 = pca$x[,2],
+    PC3 = pca$x[,3],
+    Subj = str_split(colnames(edata3),"\\_", simplify = T)[,1],
+    TX = str_split(colnames(edata3),"\\_", simplify = T)[,2]
+)
+
+sd_exp = pca$sdev / sum(pca$sdev) 
+
+p = ggplot(data = data) +
+    geom_point(
+        aes(x = PC1, y = PC2, colour = TX, Subj = Subj), 
+        size = 3) +
+    stat_ellipse(aes(x=PC1, y=PC2, colour = TX))+
+    labs(
+        x = str_c("PC1 (", round(sd_exp[1]*100,1), "%)"),
+        y = str_c("PC2 (", round(sd_exp[2]*100,1), "%)")
+    ) +
+    scale_color_tableau() +
+    theme_bw() +
+    theme() 
+ggplotly(p,toolkip = "all")
+```
+
+### loading plot
+
+```{r}
+data = data.frame(
+    feature = rownames(pca$rotation),
+    PC1 = pca$rotation[,1],
+    PC2 = pca$rotation[,2],
+    P.Value = limma_sub$P.Value,
+    adj.P.Val = limma_sub$adj.P.Val,
+    logFC = limma_sub$logFC
+) %>%
+    mutate(
+        sd = fdata$qc_cv[fdata$Annotation %in% rownames(edata_sub)]
+    )
+p = ggplot(data) +
+    geom_text(aes(x = PC1, y = PC2, label = feature, 
+                  P.Value = P.Value, adj.P.Val = adj.P.Val, 
+                  logFC = logFC, sd = sd)) +
+    labs(
+        x = str_c("PC1 (", round(sd_exp[1]*100,1), "%)"),
+        y = str_c("PC2 (", round(sd_exp[2]*100,1), "%)")
+    ) +
+    theme_bw()
+ggplotly(p, toolkit = "all")
+```
+
+Column
+-----------------------------------------
+
+### Heatmap
+
+```{r}
+col_side_colors = str_split(colnames(edata3), "\\_",2, simplify = T)[,2] %>%
+    as.data.frame %>%
+    setnames("Treatment") %>%
+    mutate(rownames = colnames(edata3)) %>%
+    column_to_rownames("rownames")
+
+# ColSideColors = data.frame(
+#     Treatment = RSkittleBrewer::RSkittleBrewer("tropical")[as.factor(col_side_colors$Treatment)]
+# ) %>%
+#     mutate(rownames = colnames(edata3)) %>%
+#     column_to_rownames("rownames")
+
+heatmaply(edata3, colors = Spectral, col_side_colors = col_side_colors, seriate="OLO")
+
+# ColSideColors = RSkittleBrewer::RSkittleBrewer("tropical")[as.factor(Treatment)]
+# my_palette = colorRampPalette(brewer.pal(n=11,name="Spectral"))(n=100)
+# heatmap.2(x=edata3, col=my_palette, ColSideColors = ColSideColors)
+```
+

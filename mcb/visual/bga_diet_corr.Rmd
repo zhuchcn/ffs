@@ -1,0 +1,91 @@
+---
+title: "Biogenic Amines vs Diet"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', "DT",
+         'limma','ggthemes','Biostrings','ggplot2','ggsci')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../Rdata/bga_precalc.Rdata')
+```
+
+```{r}
+inputPanel(
+    selectInput("diet", "Select a Diet Component:",
+                choices = names(diet_corr), selected = "SatFat (g)")
+)
+```
+
+Column
+----------------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        bga = as.numeric(edata[feature_selector(),]),
+        diet = diet_data[,input$diet],
+        Subj = pdata$Subject,
+        TX = pdata$TX,
+        Day = pdata$Day
+    ) %>%
+        filter(!is.na(diet))
+    p = ggplot(df, aes(diet, bga)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=2) +
+        stat_smooth(method = "lm") +
+        scale_color_npg() +
+        theme_bw() +
+        labs(x = input$diet, y=feature_selector()) +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p)
+})
+```
+
+Column
+----------------------------------------
+
+### corr table
+
+```{r}
+corr_table = reactive({
+    diet_corr[[input$diet]] %>%
+        rownames_to_column("Feature") %>%
+        arrange(pearson.pvalue) %>%
+        sapply(function(col){
+            if(!is.numeric(col)){
+                return(col)
+            }
+            return(round(col, 3))
+        }) %>%
+        as.data.frame %>%
+        column_to_rownames("Feature")
+})
+output$corr_table = renderDataTable(
+    corr_table(),
+    selection = list(mode = "single", selected = 1),
+    server=T
+)
+feature_selector = reactive({
+    rownames(corr_table())[input$corr_table_rows_selected]
+})
+dataTableOutput("corr_table")
+```

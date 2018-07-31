@@ -1,0 +1,184 @@
+---
+title: "Enterotype"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        source_code: embed
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', "DT", "data.table",
+         'Biostrings','ggplot2','ggsci', 'cluster','ade4', 'BiotypeR')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+Inputs {.sidebar data-width=250}
+----------------------------
+
+<div class="shiny-input-panel">
+<div style="border: 1px solid #CCCCCC; border-radius: 5px; margin: 5% 0.5%; background-color: #FFFFFF;">
+<div style="margin:5% 3%;">
+<p style="font-size: 110%; font-weight: bold">
+Info:
+</p>
+<p>
+The calculation of enterotype is using the method first reported by <a href="https://www.nature.com/articles/nature09944">Arumugan 2012</a>, where they were able to find 3 clusters of people based on their dominant genera, in 3 independent datasets. They also stats that the enterotype is independent of contries, regions, BMI, or age, and more likely to be related by the long-term dietary pattern.<br /><br />
+The code to generate the 3 enterotypes were borrowed from their tutorial in <a href="http://enterotyping.embl.de/enterotypes.html">here</a>
+</p>
+</div>
+</div>
+</div>
+
+```{r}
+load('../Rdata/mcb_precalc.Rdata')
+pdata = setnames(
+    pdata,
+    old=c("Treatment", "Timepoint","StudyID"),
+    new=c("TX","Day","Subj")
+)
+```
+
+```{r, include=F}
+data = edata_list$proportion$Genus
+data.dist = dist.JSD(data)
+
+pam.clustering=function(x,k) { # x is a distance matrix and k the number of clusters
+    require(cluster)
+    cluster = as.vector(pam(as.dist(x), k, diss=TRUE)$clustering)
+    return(cluster)
+}
+
+data.cluster=pam.clustering(data.dist, k=3)
+
+noise.removal <- function(dataframe, percent=0.01, top=NULL){
+    dataframe->Matrix
+    bigones <- rowSums(Matrix)*100/(sum(rowSums(Matrix))) > percent 
+    Matrix_1 <- Matrix[bigones,]
+    print(percent)
+    return(Matrix_1)
+}
+
+data.denoized=noise.removal(data, percent=0.01)
+
+obs.pca=dudi.pca(data.frame(t(data.denoized)), scan=F, nf=10)
+obs.bet=bca(x=obs.pca, fac=factor(data.cluster), scannf = F, nf=2) 
+#s.class(obs.bet$ls, fac=as.factor(data.cluster), grid=F)
+```
+
+```{r}
+fac=factor(data.cluster)
+wt = rep(1, length(fac))
+col = rep(1, length(levels(fac)))
+
+dfdistri <- ade4:::fac2disj(fac) * wt
+coul <- col
+w1 <- unlist(lapply(dfdistri, sum))
+dfdistri <- t(t(dfdistri)/w1)
+coox <- as.matrix(t(dfdistri)) %*% obs.bet$ls[, 1]
+cooy <- as.matrix(t(dfdistri)) %*% obs.bet$ls[, 2]
+
+df = mutate(obs.bet$ls,
+            type = factor(data.cluster),
+            Subj = pdata$Subj, TX = pdata$TX, Day = pdata$Day) %>%
+    mutate(Coox = coox[type], Cooy = cooy[type])
+```
+
+Column {data-width=580}
+--------------------
+
+### {data-height=550}
+
+```{r}
+p = ggplot(df, aes(CS1, CS2, TX=TX, Day=Day)) +
+    stat_ellipse(aes(group=type, fill=type), type="norm", 
+                 level=0.65, alpha=0.25, geom="polygon")+
+    geom_segment(data=df,
+                 aes(x=CS1, y=CS2, xend=Coox, yend=Cooy), 
+                 alpha=0.5)+
+    geom_point(aes(color = Subj)) +
+    # geom_label(data=data.frame(coox, cooy), 
+    #            aes(coox, cooy, label=1:3), alpha=0.7)  +
+    scale_color_npg() +
+    theme_bw() 
+renderPlotly({
+    ggplotly(p)
+})
+```
+
+```{r}
+# find genera to label
+generas = sapply(as.data.frame(data), function(col) 
+    rownames(data)[which(col==max(col))]) %>%
+    as.character() %>% unique ()
+
+pdata$Enterotype = factor(data.cluster)
+
+df2 = reactive({
+    data[generas,] %>%
+    t %>% as.data.frame %>%
+    mutate(
+        Subj = pdata$Subj,
+        Day = pdata$Day,
+        TX = pdata$TX,
+        Enterotype = pdata$Enterotype 
+    ) %>%
+    melt(id.var=c("Subj","Day","TX","Enterotype"), 
+         variable.name="Genera", value.name="Value")
+}) 
+```
+
+### {data-height=250}
+
+```{r}
+renderPlotly({
+    p2 = df2() %>%
+        filter(Genera %in% c("Faecalibacterium","Prevotella_9")) %>%
+        ggplot(aes(Enterotype,Value)) +
+        geom_boxplot() +
+        geom_point(aes(color=Subj), size=2) +
+        facet_grid(.~Genera) +
+        scale_color_npg() +
+        theme_bw() +
+        theme(
+            legend.position = "none",
+            axis.title = element_blank()
+            
+        )
+    ggplotly(p2)
+})
+```
+
+Column {data-width=300}
+--------------------------------
+
+###
+
+```{r}
+
+renderPlotly({
+    p3 = df2() %>%
+    filter(
+        Genera%in%c("Bifidobacterium","Roseburia","Bacteroides","Blautia")
+    ) %>%
+    ggplot(aes(Enterotype,Value)) +
+    geom_boxplot() +
+    geom_point(aes(color=Subj), size=2) +
+    facet_grid(Genera~.) +
+    scale_color_npg() +
+    theme_bw() +
+    theme(
+        legend.position = "none",
+        axis.title = element_blank()
+    )
+    ggplotly(p3)
+})
+```

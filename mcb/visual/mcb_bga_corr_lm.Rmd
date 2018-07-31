@@ -1,0 +1,152 @@
+---
+title: "Microbiome vs Biogenic Amines Scatterplot"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/mcb.html", 
+                align: left }
+        wdsource_code: embed
+        css: ../../css/styles.css
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly','data.table',
+         'Biostrings','ggplot2','ggsci', "DT", "heatmaply")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../Rdata/mcb_precalc.Rdata')
+bga_data = biogenic_amines$edata %>%
+    mutate(feature = biogenic_amines$fdata$Metabolite_Name) %>%
+    remove_rownames() %>%
+    column_to_rownames("feature")
+```
+
+Scatterplot
+==================
+
+Inputs {.sidebar}
+--------------------------------
+
+###
+
+```{r}
+inputPanel(
+    selectInput('normal_1', 'Select A Transform Method: ',
+                choices = names(edata_list), selected = names(edata_list)[1]),
+    selectInput('level_1','Select A Taxonomy Level: ',
+                choices = names(edata_list$reads), selected = "Phylum")
+)
+```
+
+
+Column
+-------------------------------------
+    
+### Chart 1
+
+```{r}
+renderPlotly({
+    df = data.frame(
+        bga = as.numeric(bga_data[bga_selector(),]),
+        mcb = as.numeric(edata_list[[input$normal_1]][[input$level_1]][feature_selector_1(),]),
+        Subj = pdata$StudyID,
+        TX = pdata$Treatment,
+        Day = pdata$Timepoint
+    )
+    p = ggplot(df, aes(x = mcb, y = bga)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=2) +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            x=feature_selector_1(),
+            y=bga_selector()
+        )+
+        scale_color_npg() +
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p)
+})
+```
+
+Column 
+-------------------------------------
+
+###
+
+```{r}
+another_table = reactive({
+    bga_corr_lm[[input$normal_1]][[input$level_1]] %>% 
+        sapply(function(data){
+            pval_num = sum(data$pval <= 0.05)
+            padj_num = sum(data$padj <= 0.05)
+            return(c(pval_num, padj_num))
+        }) %>% t %>% as.data.frame() %>%
+        setnames(c("pval < 0.05","padj < 0.05")) %>%
+        rownames_to_column("bga") %>%
+        arrange(desc(`pval < 0.05`)) %>%
+        column_to_rownames("bga")
+})
+output$another_table = renderDataTable(
+    another_table(), 
+    selection = list(mode = "single", selected = 1),
+    server=T,
+    options = list(
+        pageLength=5,
+        scrollX = "200px",
+        scrollY = "200px"
+        )
+    )
+bga_selector = reactive({
+    rownames(another_table())[input$another_table_rows_selected]
+})
+dataTableOutput("another_table")
+```
+
+### Stats Table
+
+```{r}
+stats_table_1 = reactive({
+    bga_corr_lm[[input$normal_1]][[input$level_1]][[bga_selector()]] %>%
+        rownames_to_column(var = "Feature") %>%
+        mutate(
+            num_zero = edata_list[[input$normal_1]][[input$level_1]] %>% 
+                apply(1, function(row) sum(row==0)) %>%
+                as.integer
+        ) %>% 
+        arrange(pval)  %>%
+        sapply(function(col){
+            if(!is.double(col)) return(col)
+            round(col, digits=3)
+        }) %>%
+        as.data.frame() %>%
+        column_to_rownames(var = "Feature")
+})
+output$stats_table_1 = renderDataTable(
+    stats_table_1(), 
+    selection = list(mode = "single", selected = 1),
+    server=T,
+    options = list(
+        pageLength=5,
+        scrollX = "200px",
+        scrollY = "200px",
+        paging = T
+        )
+    )
+feature_selector_1 = reactive({
+    rownames(stats_table_1())[input$stats_table_1_rows_selected]
+})
+dataTableOutput("stats_table_1")
+```
+

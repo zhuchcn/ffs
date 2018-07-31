@@ -1,0 +1,102 @@
+---
+title: "Lipidome vs Clinical Scatterplot"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/mcb.html", 
+                align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+#rmarkdown::run('mcb_cladogram.Rmd')
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly',"DT",
+         'ggthemes','Biostrings','ggplot2','ggsci')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../Rdata/mcb_precalc.Rdata')
+```
+
+```{r}
+inputPanel(
+    selectInput('normal', 'Select A Transform Method: ',
+                choices = names(clinical_corr), 
+                selected = "proportion"),
+    selectInput('level','Select A Taxonomy Level: ',
+                choices = names(clinical_corr$reads), 
+                selected = "Genus"),
+    selectInput('covar', 'Select A Clinical Variable: ',
+                choices = names(clinical_corr$reads$Kingdom),
+                selected="Total Cholesterol (mg/dL)")
+)
+```
+
+Column
+-------------------------------------
+    
+### Chart 1
+
+```{r}
+renderPlotly({
+    data = data.frame(
+        Covar = clinical_data[,input$covar],
+        Abundance = as.numeric(edata_list[[input$normal]][[input$level]][feature_selector(),]),
+        Subj = pdata$StudyID,
+        TX = pdata$Treatment,
+        Day = pdata$Timepoint
+    )
+    data = data[!is.na(data$Covar),]
+    p = ggplot(data, aes(x = Covar, y = Abundance)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=rel(2)) +
+        scale_color_npg() +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            x=input$covar,
+            y=input$taxo_id
+        )+
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip="all")
+})
+```
+
+Column
+-------------------------------------
+
+### Stats Table
+
+```{r}
+stats_table = reactive({
+     clinical_corr[[input$normal]][[input$level]][[input$covar]] %>% 
+        rownames_to_column("Feature") %>%
+        arrange(pearson.pvalue) %>%
+        sapply(function(col){
+            if(is.numeric(col))
+                return(round(col, digits = 3))
+            return(col)
+        }) %>% 
+        as.data.frame %>%
+        column_to_rownames("Feature")
+})
+output$stats_table = renderDataTable(
+    stats_table(),
+    selection = list(mode = "single", selected = 1),
+    server=T
+)
+feature_selector = reactive({
+    rownames(stats_table())[input$stats_table_rows_selected]
+})
+dataTableOutput("stats_table")
+```

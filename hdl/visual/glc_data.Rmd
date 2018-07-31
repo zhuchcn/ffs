@@ -1,0 +1,188 @@
+---
+title: "Glycopeptides Data"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/index.html", 
+                align: left }
+        source_code: embed
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'DT','data.table',
+         'limma')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../Rdata/glc_precalc.Rdata")
+```
+
+Peptides
+=====================================
+
+```{r}
+glycopeptide$peptides$edata %>%
+    t %>% as.data.frame() %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+Raw Glycans
+=====================================
+
+```{r}
+glycopeptide$glycans$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Position {data-navmenu="Summarized Glycans"}
+=====================================
+
+```{r}
+glycopeptide$glycan_by_position$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Protein {data-navmenu="Summarized Glycans"}
+=====================================
+
+```{r}
+glycopeptide$glycan_by_protein$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Position {data-navmenu="Sugars"}
+=====================================
+
+```{r}
+glycopeptide$sugar_by_position$edata %>%
+    t %>% as.data.frame() %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Protein {data-navmenu="Sugars"}
+=====================================
+
+```{r}
+glycopeptide$sugar_by_protein$edata %>%
+    t %>% as.data.frame() %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Sample {data-navmenu="Sugars"}
+=====================================
+
+```{r}
+glycopeptide$sugar_total$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Position {data-navmenu="Number of Sugars"}
+=====================================
+
+```{r}
+glycopeptide$sugar_number_by_position$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Protein {data-navmenu="Number of Sugars"}
+=====================================
+
+```{r}
+glycopeptide$sugar_number_by_protein$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
+
+By Sample {data-navmenu="Number of Sugars"}
+=====================================
+
+```{r}
+glycopeptide$sugar_number_total$edata %>%
+    t %>% as.data.frame()%>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```

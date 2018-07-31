@@ -1,0 +1,271 @@
+---
+title: "Microbiome vs Biogenic Amines"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+        wdsource_code: embed
+        css: ../../css/styles.css
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly','data.table',
+         'ggplot2','ggsci')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load('../Rdata/mcb_precalc.Rdata')
+pdata = setnames(
+    pdata,
+    old=c("Treatment", "Timepoint","StudyID"),
+    new=c("TX","Day","Subj")
+)
+```
+
+Inputs {.sidebar data-width=350}
+-------------------------
+
+###
+
+<div class="shiny-input-panel">
+<div style="border: 1px solid #CCCCCC; border-radius: 5px; margin: 5% 0.5%; background-color: #FFFFFF;">
+<div style="margin:5% 3%;">
+<p style="font-size: 110%; font-weight: bold">
+Info:
+</p>
+
+<p>
+It appears that many biogenic amines features are correlated with microbiome genus. However, many of those correlations are mainly caused by one or a very few points. The microbiome composition has very strong variability, so if a genus is only present in one sample, than that point will have large leverage to the linear model, to cause a large R and small P value.
+</p>
+
+<p>
+In this page, correlation coefficients are calculated for each biogenic amine feature and microbiome genus combination, with FF and Med treatments seperate. The points in the scatter plot with gred color are the combinations of biogenic amine and microbiome genus with p <= 0.05 for both treatments, while the blue points are only signficant in one treatment arm but not the other. The grey points are not significant in either treatment group. The blue points are significant in one treatment but not the other, so it's very likely to be a false positive, while the red points are less likely to be.
+</p>
+
+<p>
+The points in the scatter plot are clickable and it will draw 3 more graphes for you. They are scatter plot for the clicked combination, boxplot for clicked biogenic amine, and bocplot for the clicked genus.
+</p>
+
+</div>
+</div>
+</div>
+
+```{r}
+mcb_edata = as.data.frame(edata_list$proportion$Genus)
+bga_edata = biogenic_amines$edata
+rownames(bga_edata) = biogenic_amines$fdata$Metabolite_Name
+bga_edata = bga_edata[!grepl("iSTD", rownames(bga_edata)),]
+
+computeCorr = function(X, Y, TX){
+    r_list = lapply(rownames(Y), function(yind){
+        y = as.numeric(Y[yind,])
+        apply(X, 1, function(x){
+            x = as.numeric(x)
+            cor.FF  = cor.test(x[TX=="FF"],  y[TX=="FF"],  method = "pearson")
+            cor.Med = cor.test(x[TX=="Med"], y[TX=="Med"], method = "pearson")
+            
+            r.FF  = cor.FF$estimate
+            p.FF  = cor.FF$p.value
+            r.Med = cor.Med$estimate
+            p.Med = cor.Med$p.value
+            
+            return = c(r.FF, p.FF, r.Med, p.Med)
+            names(return) = c("r.FF", "p.FF", "r.Med", "p.Med")
+            return(return)
+        }) %>%
+            t
+    })
+    names(r_list) = rownames(Y)
+    return(r_list)
+}
+
+corr_list = computeCorr(mcb_edata, bga_edata, pdata$TX)
+
+corr_mat = NULL
+for(i in 1:length(corr_list)){
+    mat_2_add = corr_list[[i]] %>%
+        as.data.frame %>%
+        rownames_to_column("mcb_feature") %>%
+        mutate(bga_feature = names(corr_list)[i]) 
+    if(is.null(corr_mat)){
+        corr_mat = mat_2_add
+        next
+    }
+    corr_mat = rbind(corr_mat, mat_2_add)
+}
+corr_mat$r.FF [is.na(corr_mat$r.FF )] = 0
+corr_mat$r.Med[is.na(corr_mat$r.Med)] = 0
+corr_mat$p.FF [is.na(corr_mat$p.FF )] = 1
+corr_mat$p.Med[is.na(corr_mat$p.Med)] = 1
+```
+
+Column
+-----------------------
+
+###
+
+```{r}
+df = corr_mat %>%
+    filter(p.FF != 1, p.Med != 1) %>%
+    mutate(Sig = ifelse(
+        p.FF <= 0.05 & p.Med <= 0.05, "Both",
+        ifelse(
+            p.FF <= 0.05 | p.Med <= 0.05, "Either", "none"
+        )
+    )) %>%
+    mutate(Sig = factor(Sig, levels=c("none", "Either", "Both")))
+my_colors = c(
+    alpha("grey18", alpha=0.2),
+    alpha(pal_lancet()(2)[1], alpha=0.45),
+    alpha(pal_lancet()(2)[2], alpha=0.7)
+)
+p = ggplot(df) +
+    geom_point(aes(x = r.FF, y = r.Med, color = Sig,
+                   mcb_feature = mcb_feature, 
+                   bga_feature = bga_feature),
+               size = 2) +
+    scale_color_manual(values = my_colors) +
+    scale_x_continuous(limits = c(-0.7,1)) +
+    scale_y_continuous(limits = c(-0.7,1)) +
+    labs(
+        x = "Fast Food Arm",
+        y = "Mediterranean Arm"
+    ) +
+    theme_bw() +
+    theme(
+        # legend
+        legend.title = element_blank(),
+        legend.position = "bottom",
+        # plot
+        panel.border = element_rect(color="black", size=0.8)
+    )
+p_plotly = ggplotly(p, source = "A") %>%
+    layout(
+        legend = list(
+            orientation = "h",
+            x = 0.24, y = 1.2
+        )
+    )
+renderPlotly({
+    p_plotly
+})
+```
+
+###
+
+```{r}
+pointData = reactive({
+    eventData = event_data(event = "plotly_click", source = "A")
+    curveNumber = eventData[1,1]+1
+    pointNumber = eventData[1,2]+1
+    pointData = p_plotly$x$data[[curveNumber]]$text[pointNumber] %>%
+        str_split("<br />", simplify=T) %>%
+        str_split(":\\s{1,2}", simplify=T)
+    pointData2 = pointData[,2]
+    names(pointData2) = gsub("~","", pointData[,1])
+    pointData2
+})
+```
+
+```{r}
+renderPlotly({
+    mcb_feature = pointData()["mcb_feature"]
+    bga_feature = pointData()["bga_feature"]
+    df = data.frame(
+        mcb = as.numeric(mcb_edata[mcb_feature,]),
+        bga = as.numeric(bga_edata[bga_feature,]),
+        TX = pdata$TX,
+        Day = pdata$Day,
+        Subj = pdata$Subj
+    )
+    p = ggplot(df, aes(x = mcb, y = bga)) +
+        geom_point(aes(color = Subj, TX=TX, Day=Day), size=2) +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            x=mcb_feature,
+            y=bga_feature
+        )+
+        scale_color_npg() +
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p)
+})
+```
+
+Column
+---------------------------------
+
+###
+
+```{r}
+renderPlotly({
+    mcb_feature = pointData()["mcb_feature"]
+    df = data.frame(
+        mcb = as.numeric(mcb_edata[mcb_feature,]),
+        TX = pdata$TX,
+        Day = pdata$Day,
+        Subj = pdata$Subj
+    )
+    p = ggplot(df, aes(x=Day, y=mcb)) +
+        geom_boxplot() +
+        geom_point(aes(colour = Subj)) +
+        geom_line(aes(group = Subj, colour = Subj)) +
+        facet_grid(~TX) +
+        labs(title = mcb_feature) +
+        theme_bw() +
+        scale_color_npg()+
+        theme(
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size=rel(1.5), color = 'black'),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            legend.position = 'none',
+            strip.text = element_text(size=15)
+            
+        )
+    ggplotly(p)
+})
+```
+
+###
+
+```{r}
+renderPlotly({
+    bga_feature = pointData()["bga_feature"]
+    df = data.frame(
+        bga = as.numeric(bga_edata[bga_feature,]),
+        TX = pdata$TX,
+        Day = pdata$Day,
+        Subj = pdata$Subj
+    )
+    p = ggplot(df, aes(x=Day, y=bga)) +
+        geom_boxplot() +
+        geom_point(aes(colour = Subj)) +
+        geom_line(aes(group = Subj, colour = Subj)) +
+        facet_grid(~TX) +
+        labs(title = bga_feature) +
+        theme_bw() +
+        scale_color_npg()+
+        theme(
+            axis.title.x = element_blank(),
+            axis.text.x = element_text(size=rel(1.5), color = 'black'),
+            axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(),
+            legend.position = 'none',
+            strip.text = element_text(size=15)
+            
+        )
+    ggplotly(p)
+})
+```

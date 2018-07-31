@@ -1,0 +1,118 @@
+---
+title: "FFS Diet Correlation Scatterplot"
+output: 
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", href: "../../website/_site/mcb.html", align: left }
+runtime: shiny 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'plotly', 'Hmisc',
+         'ggthemes','Biostrings','ggplot2','ggthemr','RColorBrewer','d3heatmap')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+# rm(list=ls())
+# setwd('/Users/chenghaozhu/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/microbiome_and_metabolome/')
+load('../../data/microbiome_and_metabolome.Rdata')
+```
+
+```{r, cache=F}
+inputPanel(
+    selectInput("x", "Select X:",
+                choices=colnames(diet_data)[-(1:4)], 
+                selected = "SatCals (kcal)"),
+    selectInput("y", "Select Y:",
+                choices=colnames(diet_data)[-(1:4)], 
+                selected = "Fib (g)"),
+    selectInput("method","Select a Method: ",
+                choices = c("pearson","spearman","kendall"), selected = "pearson")
+)
+```
+
+Column
+-------------------------------------
+    
+### Raw
+
+```{r, cahce=F}
+output$scatterplot = renderPlotly({
+    data = data.frame(
+        x = diet_data[,input$x],
+        y = diet_data[,input$y],
+        Subj = factor(diet_data$`Subject ID`),
+        TX = diet_data$Treatment,
+        Day = diet_data$Time
+    )
+    data = data[!is.na(data$x),]
+    cor_result = cor.test(data$x, data$y, method = input$method)
+    p = ggplot(data, aes(x=x, y=y)) +
+        geom_point(aes(color=Subj, TX=TX, Day=Day), size=rel(2)) +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            title = str_c("r = ", round(cor_result$estimate, digit=3), 
+                          ", pvalue = ", round(cor_result$p.value, digit=3)),
+            x=input$x,
+            y=input$y
+        )+
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip=c("Subj","TX","Day", "x", "y"))
+})
+plotlyOutput("scatterplot")
+```
+
+Column
+-------------------------------------
+    
+### Normalized by total Calories intake
+
+```{r, include=F, eval=F}
+# output$heatmap = renderD3heatmap({
+#     r = corr.list[[input$method]][["r"]]
+#     r[is.na(r)] = 0
+#     d3heatmap(r)
+# })
+# d3heatmapOutput("heatmap",width="100%")
+
+```
+
+```{r}
+output$scatterplot2 = renderPlotly({
+    data = data.frame(
+        x = diet_data[,input$x]/diet_data[,"Cals (kcal)"],
+        y = diet_data[,input$y]/diet_data[,"Cals (kcal)"],
+        Subj = factor(diet_data$`Subject ID`),
+        TX = diet_data$Treatment,
+        Day = diet_data$Time
+    )
+    data = data[!is.na(data$x),]
+    cor_result = cor.test(data$x, data$y, method = input$method)
+    p = ggplot(data, aes(x=x, y=y)) +
+        geom_point(aes(color=Subj, TX=TX, Day=Day), size=rel(2)) +
+        stat_smooth(method='lm', formula = y~x) +
+        labs(
+            title = str_c("r = ", round(cor_result$estimate, digit=3), 
+                          ", pvalue = ", round(cor_result$p.value, digit=3)),
+            x=str_c(input$x, " / Cals (kcal)"),
+            y=str_c(input$y, " / Cals (kcal)")
+        )+
+        theme_bw() +
+        theme(
+            legend.position = "none"
+        )
+    ggplotly(p, tooltip=c("Subj","TX","Day", "x", "y"))
+})
+plotlyOutput("scatterplot2")
+```

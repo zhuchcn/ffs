@@ -1,0 +1,46 @@
+---
+title: "Biogenic Amines Data"
+output:
+    flexdashboard::flex_dashboard:
+        navbar:
+            - { title: "About Fast Food Study", 
+                href: "../../website/_site/index.html", 
+                align: left }
+        source_code: embed
+        
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning =F, error = F, message=F)
+```
+
+```{r, packages}
+pkgs = c('plyr', 'dplyr','stringr','reshape2','tibble', 'DT','data.table',
+         'limma')
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+```
+
+```{r}
+load("../../data/microbiome_and_metabolome.Rdata")
+```
+
+###
+
+```{r}
+biogenic_amines$edata %>%
+    mutate(feature = biogenic_amines$fdata$Metabolite_Name) %>%
+    column_to_rownames("feature") %>%
+    t %>% as.data.frame %>%
+    datatable(
+        extensions = 'Buttons',
+        options = list(
+            dom = "Bfrtip",
+            pageLength = 40,
+            bottons = c("copy","csv","excel")
+        )
+    )
+```
