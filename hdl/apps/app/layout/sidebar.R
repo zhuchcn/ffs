@@ -3,7 +3,7 @@ sidebar = dashboardSidebar(
     sidebarMenu(
         id = "sidebar",
         menuItem("Home", icon = icon("home"), newtab = FALSE,
-                 href = "http://www.chenghaozhu.net/studies/ffs/website/_site/hdl.html"),
+                 href = "http://www.chenghaozhu.net/studies/ffs/docs/hdl.html"),
         menuItem(
             icon = icon("caret-right"), "Lipidome", 
             menuSubItem("Boxplot", tabName = "lpd_boxplot"),
