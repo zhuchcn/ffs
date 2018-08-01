@@ -1,6 +1,6 @@
 pkgs = c('dplyr','stringr','reshape2','tibble', 'plotly', 'DT', 'Metabase',
          'ggsci', "shiny", "shinydashboard", "ggmetaplots", "heatmaply",
-         "RColorBrewer", "grid", "gridExtra", "ggtree", "treeio", "cowplot")
+         "RColorBrewer")
 for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
             character.only=TRUE)

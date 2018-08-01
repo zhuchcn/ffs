@@ -51,9 +51,14 @@ names(colors) = c(levels(anno$class), levels(anno$FF))
 anno.t = rownames_to_column(anno, "label") %>%
     melt(id.vars = "label")
 
-p = ggtree(tree)
+p = ggtree(tree)  
 
-p = gheatmap(p, anno, offset = 0, width = 0.3) +
+#p = p + geom_text2(aes(subset = !isTip, label = node), hjust = -.3) + geom_tiplab()
+
+p = p %>% ggtree::rotate(172) %>% ggtree::rotate(179) %>% ggtree::rotate(192)
+
+
+p2 = gheatmap(p, anno, offset = 0, width = 0.3) +
     scale_fill_manual(values = colors[anno.t$value], guide = F)+
     #theme(legend.position =  "none") +
     coord_polar(theta = "y")
@@ -73,6 +78,6 @@ lgd2 = class.dat %>%
 lgd2 = get_legend(lgd2)
 
 output$lpd_clado = renderPlot({
-    grid.arrange(p, lgd1, lgd2, layout_matrix = rbind(c(1,2),c(1,3)),
+    grid.arrange(p2, lgd1, lgd2, layout_matrix = rbind(c(1,2),c(1,3)),
                  widths = c(5,1))
 })
