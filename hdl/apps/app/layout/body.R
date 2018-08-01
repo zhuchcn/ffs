@@ -105,6 +105,30 @@ lpd_pca = tabItem(
     )
 )
 
+lpd_clado = tabItem(
+    tabName = "lpd_clado",
+    fluidRow(
+        column(
+            width = 9,
+            box(
+                width = NULL, height = 600,
+                plotOutput("lpd_clado", height = "580px")
+            )
+        ),
+        column(
+            width = 3,
+            box(
+                width = NULL,
+                tags$div(
+                    tags$style("width:80%;margin:auto"),
+                    tags$h2("Cladogram"),
+                    tags$br(),
+                    tags$p("The cladograme is made using the Tanimoto similarity between lipid spceis molecules.")
+                )
+            )
+        )
+    )
+)
 
 body = dashboardBody(
     tags$head(
@@ -114,6 +138,7 @@ body = dashboardBody(
         boxplotTabGen("lpd_boxplot"),
         histTabGen("lpd_hist"),
         lpd_pca,
+        lpd_clado,
         corrTabGen("lpd_fct"),
         corrTabGen("lpd_cli"),
         boxplotTabGen("glc_boxplot"),

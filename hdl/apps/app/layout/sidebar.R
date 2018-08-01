@@ -9,6 +9,7 @@ sidebar = dashboardSidebar(
             menuSubItem("Boxplot", tabName = "lpd_boxplot"),
             menuSubItem("Histograms", tabName = "lpd_hist"),
             menuSubItem("Heatmap and PCA", tabName = "lpd_pca"),
+            menuSubItem("Cladogram", tabName = "lpd_clado"),
             menuSubItem("vs HDL Function", tabName = "lpd_fct"),
             menuSubItem("vs Clinical Values", tabName = "lpd_cli")
         ),
