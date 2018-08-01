@@ -7,6 +7,7 @@ for(pkg in pkgs){
 }
 
 load("data/data.rda")
+load("data/similar_matrix.rda")
 source("layout/sidebar.R")
 source("layout/body.R")
 

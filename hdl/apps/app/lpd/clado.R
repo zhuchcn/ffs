@@ -1,5 +1,3 @@
-load("data/similar_matrix.rda")
-
 mset = data$data$lpd$feature$Proportion
 
 hc = hclust(dist(tanimoto.mat), method="complete")
