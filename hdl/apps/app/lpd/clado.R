@@ -51,6 +51,8 @@ names(colors) = c(levels(anno$class), levels(anno$FF))
 anno.t = rownames_to_column(anno, "label") %>%
     melt(id.vars = "label")
 
+png("NULL")
+
 p = ggtree(tree)  
 
 #p = p + geom_text2(aes(subset = !isTip, label = node), hjust = -.3) + geom_tiplab()
@@ -76,6 +78,8 @@ lgd2 = class.dat %>%
     geom_tile(aes(x=1, y = id, fill = class)) +
     scale_fill_npg()
 lgd2 = get_legend(lgd2)
+
+dev.off()
 
 output$lpd_clado = renderPlot({
     grid.arrange(p2, lgd1, lgd2, layout_matrix = rbind(c(1,2),c(1,3)),
