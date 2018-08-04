@@ -49,20 +49,23 @@ Lipidome = filter_by_cv(Lipidome, cv = "qc_cv", cid = "InChIKey")
 Lipidome$feature_data$Annotation = lipid_name_formater(Lipidome$feature_data$Annotation)
 sampleNames(Lipidome) = gsub("\\-", "", sampleNames(Lipidome))
 ## -------- get molwt ----------------------------------------------------------
-inchikey = Lipidome$feature_data$InChIKey 
-inchikey = gsub("\\?$", "", inchikey)
-inchikey = str_split_fixed(inchikey, " or ", n = 2)[,1]
-inchikey = ifelse(grepl("-$",inchikey), paste0(inchikey, "N"), inchikey)
-
-mw_cts = cts_compinfo(inchikey)
-mw_cts = sapply(mw_cts, function(x) if(is.na(x)) NA else x$molweight )
-
-mw_cts["TWXNOZDNXVHOLP-HBZIWDQGNA-N"] = 809.593445
-mw_cts["XEBSIEVNFRMOOU-XGDVQHKZNA-N"] = 770.114
-mw_cts["QICWUUGBNFIZAZ-VEOGPPBONA-N"] = 792.1195
-mw_cts["YXSZOBWVQJIWNE-LUJNSPTCSA-N"] = 772.646
-mw_cts["FJJANLYCZUNFSE-QVMKKYBKSA-N"] = 786.661
-Lipidome$feature_data$molwt = mw_cts
+## calculate the molecular weight
+data("wcmc_adduct")
+molwt = as.numeric(rep(NA, nfeatures(Lipidome)))
+for(i in 1:nfeatures(Lipidome)){
+    species = str_split(Lipidome$feature_data$Species[i], "\\_")[[1]]
+    species = gsub("\\[", "", species)
+    species = gsub("\\]", "", species)
+    species = gsub("\\+$", "", species)
+    species = gsub("\\-$", "", species)
+    species = species[species %in% rownames(wcmc_adduct)]
+    species = species[which.min(1 * wcmc_adduct[species,]$Mult + wcmc_adduct[species,]$Mass)]
+    if(length(species) == 0) next
+    mz = as.numeric(str_split(Lipidome$feature_data$`m/z`[i], "\\_")[[1]])
+    mz = mz[which.min(mz)]
+    molwt[i] = mz2molwt(species, mz)
+}
+Lipidome$feature_data$molwt = molwt
 # make annotation as it's feature names
 Lipidome$feature_data$Annotation = make.unique(Lipidome$feature_data$Annotation, sep = " ")
 featureNames(Lipidome) = Lipidome$feature_data$Annotation
