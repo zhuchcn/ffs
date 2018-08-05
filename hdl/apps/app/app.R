@@ -24,6 +24,7 @@ server <- function(input, output) {
     source("lpd/hist.R",      local = TRUE)
     source("lpd/pca.R",       local = TRUE)
     source("lpd/clado.R",     local = TRUE)
+    source("lpd/pie.R",       local = TRUE)
     source("lpd/corr_fct.R",  local = TRUE)
     source("lpd/corr_cli.R",  local = TRUE)
     

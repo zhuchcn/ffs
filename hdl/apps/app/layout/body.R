@@ -130,6 +130,19 @@ lpd_clado = tabItem(
     )
 )
 
+lpd_pie = tabItem(
+    tabName = "lpd_pie",
+    fluidRow(
+        column(
+            width = 6,
+            box(
+                width = NULL,
+                plotOutput("lpd_pie")
+            )
+        )
+    )
+)
+
 body = dashboardBody(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
@@ -139,6 +152,7 @@ body = dashboardBody(
         histTabGen("lpd_hist"),
         lpd_pca,
         lpd_clado,
+        lpd_pie,
         corrTabGen("lpd_fct"),
         corrTabGen("lpd_cli"),
         boxplotTabGen("glc_boxplot"),
