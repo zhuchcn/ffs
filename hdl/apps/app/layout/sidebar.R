@@ -8,6 +8,7 @@ sidebar = dashboardSidebar(
             icon = icon("caret-right"), "Lipidome", 
             menuSubItem("Boxplot", tabName = "lpd_boxplot"),
             menuSubItem("Histograms", tabName = "lpd_hist"),
+            menuSubItem("Clustering", tabName = "lpd_clust"),
             menuSubItem("Heatmap and PCA", tabName = "lpd_pca"),
             menuSubItem("Cladogram", tabName = "lpd_clado"),
             menuSubItem("Pie Chart", tabName = "lpd_pie"),

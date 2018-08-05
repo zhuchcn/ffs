@@ -1,6 +1,7 @@
 pkgs = c('dplyr','stringr','reshape2','tibble', 'plotly', 'DT', 'Metabase',
          'ggsci', "shiny", "shinydashboard", "ggmetaplots", "heatmaply",
-         "RColorBrewer", "ggtree", "treeio", "cowplot", "grid", "gridExtra")
+         "RColorBrewer", "ggtree", "treeio", "cowplot", "grid", "gridExtra",
+         "knitr", "dendextend")
 for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
             character.only=TRUE)
@@ -22,6 +23,7 @@ server <- function(input, output) {
     
     source("lpd/boxplot.R",   local = TRUE)
     source("lpd/hist.R",      local = TRUE)
+    source("lpd/hclust.R",    local = TRUE)
     source("lpd/pca.R",       local = TRUE)
     source("lpd/clado.R",     local = TRUE)
     source("lpd/pie.R",       local = TRUE)
