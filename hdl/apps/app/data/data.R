@@ -1,13 +1,13 @@
-setwd("~/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/analysis/hdl/apps/data")
+setwd("~/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/analysis/hdl/apps/app/data")
 
 lpd = new.env()
-load("../../Rdata/lpd_precalc_new.Rdata", envir = lpd)
+load("../../../Rdata/lpd_precalc_new.Rdata", envir = lpd)
 glc = new.env()
-load("../../Rdata/glc_precalc_new.Rdata", envir = glc)
+load("../../../Rdata/glc_precalc_new.Rdata", envir = glc)
 fct = new.env()
-load("../../Rdata/fct_precalc_new.Rdata", envir = fct)
+load("../../../Rdata/fct_precalc_new.Rdata", envir = fct)
 cli = new.env()
-load("../../Rdata/cli_precalc_new.Rdata", envir = cli)
+load("../../../Rdata/cli_precalc_new.Rdata", envir = cli)
 
 data = list(
     data = list(
