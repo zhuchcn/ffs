@@ -20,10 +20,10 @@ output$glc_hist_padj = renderPlotly({
 output$glc_volcano = renderPlotly({
     p = glc_limma_table() %>%
         rownames_to_column("Feature") %>%
-        mutate(`P < 0.05` = P.Value < 0.05) %>%
-        ggplot(aes(x = logFC, y = AveExpr, 
-                   Feature = Feature, P.Value = P.Value,
-                   adj.P.Val = adj.P.Val)) +
+        mutate(`P < 0.05` = pvalue < 0.05) %>%
+        ggplot(aes(x = logFC, y = baseMean, 
+                   Feature = Feature, pvalue = pvalue,
+                   padj = padj)) +
         geom_point(aes(color = `P < 0.05`)) +
         scale_color_lancet() +
         theme_bw()
