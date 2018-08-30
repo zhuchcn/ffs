@@ -7,7 +7,7 @@ df = mset$conc_table %>%
     summarize(mean = mean(value)) %>%
     arrange(desc(mean)) %>%
     mutate(variable = factor(variable, levels = variable),
-           offset = rev(cumsum(rev(df$mean))) - df$mean / 2)
+           offset = rev(cumsum(rev(mean))) - mean / 2)
 
 output$lpd_pie = renderPlot({
     set.seed(25)
