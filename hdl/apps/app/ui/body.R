@@ -95,7 +95,7 @@ lpd_pca = tabItem(
                 column(
                     width = 6,
                     selectInput("lpd.p", "Filter by:",
-                                choices = c("P.Value", "adj.P.Val"),
+                                choices = c("pvalue", "padj"),
                                 selected = "P.Values")
                 )
             ),

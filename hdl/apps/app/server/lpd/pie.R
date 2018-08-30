@@ -1,28 +1,22 @@
 mset = data$data$lpd$class$Proportion
 df = mset$conc_table %>%
     t %>% as.data.frame %>%
-    # mutate(
-    #     Treatment = mset$sample_table$Treatment,
-    #     Timepoint = mset$sample_table$Timepoint,
-    #     Subject   = mset$sample_table$Subject
-    # ) %>%
-    # melt(id.var = c("Treatment", "Timepoint", "Subject")) %>%
-    # group_by(Treatment,Timepoint, variable) %>%
     rownames_to_column("id") %>%
     melt(id.var = "id") %>%
     group_by(variable) %>%
     summarize(mean = mean(value)) %>%
     arrange(desc(mean)) %>%
-    mutate(variable = factor(variable, levels = variable))
+    mutate(variable = factor(variable, levels = variable),
+           offset = rev(cumsum(rev(df$mean))) - df$mean / 2)
 
 output$lpd_pie = renderPlot({
     set.seed(25)
     ggplot(df, aes(x = 1, y = mean, fill = variable)) +
         geom_bar(stat = "identity", color = "white") +
-        geom_text(data=df[1:3,], 
-                  aes(x = 1+0.2, y = mean, 
-                      label = paste(format(mean * 100, digits = 4) , "%")),
-                  color = "white") +
+        geom_text(data=df[1:6,], 
+                  aes(x = 1.25, y = offset, 
+                      label = paste(format(mean * 100, digits = 2) , "%")),
+                  color = "white", check_overlap = FALSE) +
         coord_polar("y") +
         #facet_grid(rows = "Treatment") +
         scale_fill_manual(values = colorRampPalette(pal_npg()(9))(9)[sample(1:9)]) +

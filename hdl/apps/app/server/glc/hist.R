@@ -8,12 +8,12 @@ gghist = function(data, x){
 }
 
 output$glc_hist_pval = renderPlotly({
-    p = gghist(glc_limma_table(), "P.Value")
+    p = gghist(glc_limma_table(), "pvalue")
     ggplotly(p)
 })
 
 output$glc_hist_padj = renderPlotly({
-    p = gghist(glc_limma_table(), "adj.P.Val")
+    p = gghist(glc_limma_table(), "padj")
     ggplotly(p)
 })
 

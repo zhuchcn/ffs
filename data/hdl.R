@@ -6,11 +6,10 @@ for(pkg in pkgs){
             character.only=TRUE)
 }
 setwd("~/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/analysis/data")
-##%######################################################%##
-#                                                          #
-####                      Lipidome                      ####
-#                                                          #
-##%######################################################%##
+
+################################################################################
+##########                      L I P I D O M E                       ##########
+################################################################################
 
 file = "../raw_data/lipidome/mx 302870_Zhu_CSH-QTOF MS lipidomics_03-2017_submit.xlsx"
 

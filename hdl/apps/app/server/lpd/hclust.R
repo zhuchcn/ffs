@@ -27,7 +27,7 @@ lpd_hc_limma = reactive({
 lpd_hc_dt = reactive({
     lpd_hc_limma() %>%
         rownames_to_column("Feature") %>%
-        arrange(P.Value) %>%
+        arrange(pvalue) %>%
         sapply(function(col){
             if(!is.numeric(col)) return(col)
             round(col, digits = 3)
@@ -61,11 +61,11 @@ output$lpd_hc_scatter = renderPlotly({
         group_by(cluster, Treatment) %>%
         summarize(change = mean(change)) %>%
         dcast(cluster~Treatment) %>%
-        mutate(P.Value = lpd_hc_limma()$P.Value)
+        mutate(pvalue = lpd_hc_limma()$pvalue)
     p = ggplot(df) +
         geom_point(aes(x = FF, y = Med, 
-                       color = P.Value <= 0.05, 
-                       cluster = cluster, P.Value = P.Value),
+                       color = pvalue <= 0.05, 
+                       cluster = cluster, pvalue = pvalue),
                    size = 4, alpha = 0.5) +
         geom_point(data = df[df$cluster == lpd_hc_boxplot_selector(),],
                    aes(x = FF, y = Med, cluster = cluster),
