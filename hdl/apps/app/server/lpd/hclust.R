@@ -1,6 +1,7 @@
 lpdset = data$data$lpd$feature$Proportion
 hc.lpd = hclust(dist(t(apply(lpdset$conc_table, 1, scale))))
 
+# the dendrogram
 output$lpd_hc = renderPlot({
     ggplot(as.dendrogram(hc.lpd, hang = 0.1)) +
         geom_hline(yintercept = input$lpd.hc.height, color = "red") +
@@ -47,7 +48,7 @@ lpd_hc_boxplot_selector = reactive({
 })
 
 output$lpd_hc_scatter = renderPlotly({
-    df = lpd_hc()$conc_table %>%
+    df = lpd_hc()$conc_table %>% 
         t %>% as.data.frame %>%
         mutate(
             Treatment = lpd_hc()$sample_table$Treatment,
