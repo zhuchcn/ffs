@@ -5,6 +5,9 @@ sidebar = dashboardSidebar(
         menuItem(
             icon = icon("caret-right"), "Micorbiome", 
             menuSubItem("Boxplot", tabName = "mcb_boxplot"),
+            menuSubItem("Histogram", tabName = "mcb_hist"),
+            menuSubItem("Heatmap and PCoA", tabName = "mcb_pcoa"),
+            menuScubItem("Cladogram", tabName = "mcb_clado"),
             menuSubItem("vs Biogenic Amines", tabName = "mcb_bga"),
             menuSubItem("vs Short Chain Fatty Acids", tabName = "mcb_sfa")
         ),

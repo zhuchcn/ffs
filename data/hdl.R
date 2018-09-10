@@ -1,5 +1,5 @@
 ## -------------------------------------------------------------
-pkgs = c("dplyr", "stringr", "reshape2", "tibble", "data.table", "readxl", 
+pkgs = c("dplyr", "stringr", "reshape2", "tibble", "data.table", "readxl", "tidyr",
          "Metabase", "webchem")
 for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
@@ -108,6 +108,17 @@ clinical_data = mutate(clinical_data,
        `HDL ApoA1 (per ug total protein)` = `HDL ApoA1`/`HDL Total Protein`)
 rownames(clinical_data) = rownames(diet_data)
 hdl_function = clinical_data[, c(1:6, 17:20, 30:31)]
+
+# transform tnfa
+tnfa = read_excel(
+    path = "../raw_data/function/FFS subjects 107-118 cFB anti-inflammatory assay results 2-20-17.xlsx",
+    sheet = "Sheet1",
+    range = "A1:C43"
+)
+
+pos = tnfa$`TNF-alpha (pg/mL)`[41]
+hdl_function$`TNF-a (pg/mL)` = 1 - (hdl_function$`TNF-a (pg/mL)`/pos)
+
 HDL_Function = MultiSet(
     conc_table = conc_table(t(hdl_function[,5:12])),
     sample_table = sample_table(hdl_function[,1:4]),

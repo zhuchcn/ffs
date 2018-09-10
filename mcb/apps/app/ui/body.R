@@ -61,12 +61,18 @@ corrTabGen = function(tabName) {
     )
 }
 
+mcb_pca = tabItem(
+    tabName = "mcb_pcoa"
+)
+
 body = dashboardBody(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
     ),
     tabItems(
         boxplotTabGen("mcb_boxplot"),
+        histTabGen("mcb_hist"),
+        mcb_pca,
         corrTabGen("mcb_bga"),
         corrTabGen("mcb_sfa"),
         boxplotTabGen("pcr_boxplot"),
