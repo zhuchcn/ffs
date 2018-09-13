@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>HDL Composition and Function</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="css/doc-styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Fast Food Study</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="hdl.html">HDL Composition and Function</a>
+</li>
+<li>
+  <a href="mcb.html">Microbiome and Metabolome</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="http://www.chenghaozhu.net">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">HDL Composition and Function</h1>
+
+</div>
+
+
+<section class="main-body">
+<hr />
+<div id="hdl-lipidome-glycopeptide-and-functions" class="section level2">
+<h2><a href="hdl/apps/app">HDL lipidome, glycopeptide, and functions</a></h2>
+<hr />
+</div>
+<div id="old-analysis" class="section level2">
+<h2>Old analysis</h2>
+</div>
+<div id="dietnutreint" class="section level2">
+<h2>Diet/Nutreint</h2>
+<ul>
+<li><p><a href="hdl/visual/diet_boxplot.Rmd">Treatment Diet Nutrient Boxplot</a></p></li>
+<li><p><a href="hdl/visual/diet_boxplot_2.Rmd">Treatment vs Baseline</a></p></li>
+<li><p><a href="hdl/visual/diet_change.Rmd">How Does Change of Nutr Component from Baseline Effect HDl Composition and Function?</a></p></li>
+</ul>
+</div>
+<div id="hdl-lipidome" class="section level2">
+<h2>HDL Lipidome</h2>
+<ul>
+<li><p><a href="hdl/visual/lpd_qc.Rmd">Lipidome QC</a></p></li>
+<li><p><a href="hdl/visual/lpd_116_removed.Rmd">What if we remove subject 116</a></p></li>
+<li><p><a href="hdl/visual/lpd_feature_boxplot.Rmd">Lipidome Boxplot</a></p>
+<ul>
+<li>View the boxplot of either lipid class or feature either in concentration, proportion, or normalized by total protein.</li>
+<li>When look at the concentration (ug/ml), none of them is significant after multiple test adjustment. Some lipid features are significant without mulitple testing adjustment, including two CEs (22:6, 20:4), several PCs (32:2, 34:2, 34:3, 38:6), PCs with odd chain fatty acids (33:0, 35:2, 37:3, 35:1), plasmenyl-PC(36:2, 38:4), SM(d42:3, d42:2), and plasmynl-PE(36:2, 38:4).</li>
+<li>When normalized by taking the proportion, 35 lipid species are significant and 7 of then are still signficant after multiple testing adjustment, including 3 odd-chain PCs (PC(35:2), PC(33:0), and PC(35:1)), 2 PCs (PC(38:6)A, PC(34:3)), and 2 plasmenyl-PCs (PC(p-38:4)2 and Plasmenyl-PC36:2)</li>
+<li>When <strong>normalized by HDL total protein</strong>, PC(34:3), the feature with lowest P value, becomes significant after multiple test adjustment. Some plamenyl-PC and PE become significant, but not after mulitple testing adjustment.</li>
+</ul></li>
+<li><p><a href="hdl/visual/lpd_pcaplot.Rmd">Lipidome PCA plot and Heatmap</a></p>
+<ul>
+<li>In this PCA plot and heatmap, the 35 lipid species, that are differential abundent normlzied by taking the proportion, are used, and for each study arm, the baseline value was subtracted from the post-treatment value.</li>
+<li>The effect of the 2 study arms are well separated in PCA plot and Heatmap, excecpt subject 116.</li>
+</ul></li>
+<li><p><a href="hdl/visual/lpd_fct_corr.Rmd">Lipidome vs HDL Function Scatterplot</a></p>
+<ul>
+<li>Some lipid speceis are correlated with HDL function.
+<ul>
+<li>CE 18:1, 18:2, 20:3, 20:4, and 22:6 are possitively correlated with HDL cholesterol efflux capacity, while CE 16:1 is negatively correlated with TNFa.</li>
+<li>SM 34:1, 34:2, 36:2, and 42:3 are positively correlated with HDL cholesterol efflux capacity, while SM 42:1 is positively correlted with TNFa.</li>
+<li>PE 36:4 is negatively correlated with HDL Cholesterol Efflux, while PE 38:4 is positively correlated with TNFa.</li>
+<li>Plasmenyl-PC 34:0, 38:3, and 40:3 are possitively correlated with HDL cholesterol efflux, while 38:3, 40:4, 42:4, and 42:5 are negatively correlated with TNFa.</li>
+<li>None of the PCs are significantly correlated with HDl choelsterol efflux, however PC 33:1, 35:4, 36:5, and 40:8 are negatively correlated with TNFa. PC 38:2 is positively correlated with TNFa.</li>
+<li>GlcCer 42:2 is possitively correlated with HDL cholesterol efflux, and ceramide 42:2 is possitively correlated with TNFa.</li>
+</ul></li>
+</ul></li>
+<li><p><a href="hdl/visual/lpd_clinical_correlation.Rmd">Lipidome vs Clinical Values Scatterplot</a></p></li>
+<li><p><a href="hdl/visual/lpd_diet_correlation.Rmd">Lipidome vs Dietary Data Scatterplot</a></p></li>
+<li><p><a href="hdl/visual/lpd_normalization.Rmd">Comparison of Normalization Methods for Lipidomcis Data</a></p>
+<ul>
+<li><p>Among the three normalization method, simply taking the proportion of each lipid feature yields the highest number of features that have significant differential abbundence (P&lt;=0.05).</p></li>
+<li><p>However, using concentration directly yields the most features that are significantly correlated with HDL Cholesterol Efflux (Pearson’s correlation test, P&lt;=0.05).</p></li>
+<li><p>Normalizing by total protein yields the most features that are significanly correlated with TNFa (same method as above)</p></li>
+<li><p>During the lipidomics analysis when HDL samples were injected into the MS, the HDL total proteins are not the same accross samples. HDL lipid/protein ratio also varies between samples, so normalizing by total protein maybe not propriate.</p></li>
+<li><p>Using HDL cholesterol concentration measured by kit is an alternative solution, but not sure it will better.</p></li>
+<li><p>Among the 3 normalization methods so far, I vote for using Proportion.</p></li>
+</ul></li>
+<li><p><a href="hdl/visual/lpd_unsat.Rmd">HDL Lipidome Lipid Satuation</a></p>
+<ul>
+<li><p>HDL lipidome lipid satuation is significated effected by 3-days diet intervantion. We calculated the <em>Equivalent Of Double bond per 18 carbons</em> (EOD-18) as below: <span class="math display">\[ EOD18 = \left( \frac{\sum_{i=1}^n Abd_i \times ND_i }{\sum_{i=1}^n Abd_i \times NC_i} \right) \times 18  \]</span> <span class="math inline">\(Abd_i\)</span> is the abundance of the <span class="math inline">\(i^{th}\)</span> lipid species. <span class="math inline">\(ND_i\)</span> is the number of double bond of this lipid speceis, while <span class="math inline">\(NC_i\)</span> is the number of carbon.</p></li>
+<li><p>The EOD-18 of the whole HDL lipidome is 1.51 accross all lipid species and lipid classes, which means there are around one to two double bond per 18 carbons. Cholesterol Ester has the highest EOD-18 (2.37), followed by PE (1.98), and PC (1.45), while TG, SM, Ceramide, and LPC have very small EOD-18 (0.99, 0.74, 0.65, and 0.47) which suggests satuated fatty acids are dominating in these lipid classes.</p></li>
+<li><p>HDL lipidome global EOD-18 is significanly decreased after fast food and increased after Mediterranean diet (P=0.008). The lipid classes with a high EOD-18, including PE, CE, and PC, are also significantly effected by this diet intervention (P=0.002, 0.005, and 0.006). TG, SM, Ceramide, and LPC have small EOD-18, and they were not significantly effected. PE, PC, CE, and global EOD-18 are also significantly correlated with dietary MUFA and PUFA intake (P&lt;0.05)</p></li>
+</ul></li>
+<li><p><a href="hdl/visual/lpd_chain_len.Rmd">HDL Lipidome Lipid Chain Length</a></p>
+<ul>
+<li><p>Similar to the EOD18, we calculated the ACL (<em>Average Chain Lenght</em>) as below: <span class="math display">\[ACL = \frac {\sum_{i=1}^n Abd_i \times NC_i}{\sum_{i=1}^n Abd_i} \]</span></p></li>
+<li><p>HDL lipidome global ACL is 18.06, which represents the average fatty acid carbon charin length. SM has the largest ACL (18.68), followed by PE (18.65), CE(18.50), and PC (17.96), while TG, LPC and Ceramide have smaller ACL values (17.35, 17.31, and 17.24).</p></li>
+<li>HDL lipidome global ACL is significantly effected by intervention as it decrease after fast food, and increased after Mediterranean diet (P=0.006). CE and PC are also significantly effected as the same pattern as the global ACL (P=0.001, and 0.006). Global ACL is also significantly and positively correlated HDL cholesterol efflux capacity.</li>
+<li><p>The ACL of CE is significantly and positively correlated with dietary MUFA and PUFA (P=0.019 and 0.032), while SM is possitively correlated with MUFA (0.041) and PC with PUFA (P=0.039)</p></li>
+</ul></li>
+<li><a href="hdl/visual/lpd_ratio.Rmd">HDL Lipidome Lipid Class Ratio</a>
+<ul>
+<li>We also found that the CE/FC ratio is positively correlated with HDL cholesterol efflux (P=0.006, r=0.429). CE/FC ratio is also positively correlated with HDL SAA content (P=0.001, r=0.49).</li>
+</ul></li>
+<li><p><a href="hdl/visual/lpd_odd_chain.Rmd">HDL Lipidome Odd Chain Lipids</a></p></li>
+</ul>
+</div>
+<div id="hdl-glycopeptides" class="section level2">
+<h2>HDL Glycopeptides</h2>
+<ul>
+<li><p><a href="hdl/visual/glc_feature_boxplot.Rmd">Glycopeptides Feature Boxplot</a></p>
+<ul>
+<li><p>None of the glcans are significantly differential abundent (P&lt;0.05). However, the glycan <strong>ApoE_290_O_1101</strong> has a trend to increase after Mediterranean diet than fast food diet (P=0.076). And <strong>ApoE_197_O_2212</strong> tends to decrease after Mediterranean diet (P=0.089)</p></li>
+<li><p>When look at the total glycan at specific position, the glycosylation of ApoE at position 290 is significantly decreased after fast food and increased after Mediterranean diet (P=0.025, however, not significant after multiple testing adjustment).</p></li>
+</ul></li>
+<li><p><a href="hdl/visual/glc_fct_corr.Rmd">Glycopeptides vs HDL Function Scatterplot</a></p>
+<ul>
+<li>Some glycans are highly correlated with HDL cholesterol efflux and anti-inflammatory function. A1AT_271_N_5402, A1AT_70_N_5402 and A1AT_70_N_5412 are positively correlated with HDL cholesterol efflux function. ApoE_197_O_2201 and ApoE_290_O_1101 are positively correlated with HDL cholesterol efflux. ApoE_197_O_3210 is positively correlated with HDL anti-inflammatory function, while ApoE_197_O_1100, ApoE_197_O_1101, ApoE_197_O_2212, and ApoE_76_O_1320 are negatively correlated with anti-inflammatroy function.</li>
+</ul></li>
+<li><p><a href="hdl/visual/glc_heatmap.Rmd">GLycan vs HDL Function Heatmap</a></p></li>
+<li><p><a href="hdl/visual/glc_diet_corr.Rmd">Glycopeptides vs Diet</a></p></li>
+</ul>
+</div>
+<div id="hdl-function-and-clinical-values" class="section level2">
+<h2>HDL Function and Clinical Values</h2>
+<ul>
+<li><a href="hdl/visual/fct.Rmd">HDL Function</a>
+<ul>
+<li>HDL ApoA1, after normalized by total protein, is significantly effected by treatment (P=0.018), as it increased after fast food than Mediterranean diet.</li>
+<li>HDL cholesterol efflux capacity is significantly and negatively correlated with anti-inflammatory function (P=0.034, r=-0.336).</li>
+<li>Total fat intake is negatively correlated with HDL cholesterol efflux capacity (P=0.033, r=-0.391)</li>
+</ul></li>
+<li><p><a href="hdl/visual/apoa1_vs_chol_efflux.Rmd">HDL ApoA1 Lipid Ratio vs Chol Efflux</a></p></li>
+<li><p><a href="hdl/visual/hdlc_vs_lpdc.Rmd">Comparison: HDL-C vs Lipidome Cholesterol</a></p></li>
+</ul>
+</section>
+<!-- begin wwww.htmlcommentbox.com -->
+<div id="HCB_comment_box">
+<pre><code>&lt;hr&gt;
+&lt;a href=&quot;http://www.htmlcommentbox.com&quot;&gt;Widget&lt;/a&gt; 
+is loading comments...</code></pre>
+</div>
+<link rel="stylesheet" type="text/css" href="//www.htmlcommentbox.com/static/skins/bootstrap/twitter-bootstrap.css?v=0" />
+<script type="text/javascript" id="hcb"> /*<!--*/ if(!window.hcb_user){hcb_user={comments_header:'Leave A Comment'};} (function(){var s=document.createElement("script"), l=hcb_user.PAGE || (""+window.location).replace(/'/g,"%27"), h="//www.htmlcommentbox.com";s.setAttribute("type","text/javascript");s.setAttribute("src", h+"/jread?page="+encodeURIComponent(l).replace("+","%2B")+"&mod=%241%24wq1rdBcg%24X.dWI40gANxmDig9e3e740"+"&opts=16863&num=10&ts=1525975738193");if (typeof s!="undefined") document.getElementsByTagName("head")[0].appendChild(s);})(); /*-->*/ </script>
+<!-- end www.htmlcommentbox.com -->
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

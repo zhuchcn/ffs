@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Microbiome and Metabolome</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.2/htmlwidgets.js"></script>
+<script src="site_libs/viz-0.3/viz.js"></script>
+<link href="site_libs/DiagrammeR-styles-0.2/styles.css" rel="stylesheet" />
+<script src="site_libs/grViz-binding-1.0.0/grViz.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="css/doc-styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Fast Food Study</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="hdl.html">HDL Composition and Function</a>
+</li>
+<li>
+  <a href="mcb.html">Microbiome and Metabolome</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="http://www.chenghaozhu.net">
+    <span class="fa fa-home"></span>
+     
+    Home
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Microbiome and Metabolome</h1>
+
+</div>
+
+
+<section class="main-body">
+<hr />
+<div id="htmlwidget-185569b2c31ff8c3435d" style="width:672px;height:480px;" class="grViz html-widget"></div>
+<script type="application/json" data-for="htmlwidget-185569b2c31ff8c3435d">{"x":{"diagram":"\ndigraph dot{\n\na [label=\"Gut\nMicrobiome\"]\nb [label=\"Biogenic\nAmines\"]\nc [label=\"Diet/Nutrient\nintake\"]\nd [label=\"Clinical\nValues\"]\ne [label=\"Short Chain\nFatty Acids\"]\nf [label=\"Bile Aids\nno data yet\"]\n\nedge [fontsize=10]\n\nc -> a\nc -> d [label=\"something\"]\na -> b [label=\"strong\\nassociation\"]\nc -> b [label=\"somehow\\ncorrelated\"]\na -> d [label=\"?\"]\na -> e [label = \"???\"]\n\n}","config":{"engine":"dot","options":null}},"evals":[],"jsHooks":[]}</script>
+<div id="main-app" class="section level2">
+<h2>Main App</h2>
+<ul>
+<li><a href="mcb/apps/app">Enter the main app</a></li>
+</ul>
+</div>
+<div id="biogenic-amines" class="section level2">
+<h2>Biogenic Amines</h2>
+<ul>
+<li><p><a href="mcb/visual/bga_boxplots.Rmd">Biogenic Amines Boxplots</a></p></li>
+<li><p><a href="mcb/visual/bga_diet_corr.Rmd">Biogenic Amines vs Diet</a></p></li>
+<li><p><a href="mcb/visual/bga_self_corr.Rmd">Biogenic Amines vs Self</a></p></li>
+<li><p><a href="mcb/visual/bga_structure.Rmd">Biogenic Amines Structure</a></p></li>
+</ul>
+</div>
+<div id="short-chain-fatty-acids" class="section level2">
+<h2>Short Chain Fatty Acids</h2>
+<ul>
+<li><a href="mcb/visual/scfa_boxplots.Rmd">Short Chain Fatty Acids Boxplot</a>
+<ul>
+<li>Butyric acid is the only one that has significantly differential abundance by different treatments, however, it increased after FF and decreased after Med. Opposite to what I would expect.</li>
+</ul></li>
+</ul>
+</div>
+<div id="dietary-data" class="section level2">
+<h2>Dietary Data</h2>
+<ul>
+<li><a href="mcb/visual/diet_scatterplot.Rmd">Dietary Analysis Correlation</a></li>
+</ul>
+</div>
+<div id="microbiome" class="section level2">
+<h2>Microbiome</h2>
+<div id="descriptional-analysis" class="section level3">
+<h3><em>Descriptional Analysis</em></h3>
+<ul>
+<li><p><a href="mcb/visual/mcb_taxonomy_barplot.Rmd">Taxonomy Barplots</a></p></li>
+<li><a href="mcb/visual/mcb_boxplot.Rmd">Feature Boxplots</a> <br />
+<details>
+<summary>Show the Notes</summary> <br/> <b>Bifidobacteria:</b>
+<ol>
+<li>
+Notable that subject 114 has no Bifidobacteria at all and subject 110 has very low Bifidobacteria
+</li>
+<li>
+Subjects 109 and 113 have pretty high Bifidbacteria (between 12-19%)
+</li>
+<li>
+everyone else is in the expected range of 2-10%
+</li>
+<li>
+notable that subject 111 “changes groups” from “expected Bif level” of about 6% to “high Bif level” of about 13% from Pre to Post Med diet, so the Med diet was particularly “favorable” for subject 111
+</li>
+</ol>
+</details></li>
+<li><p><a href="mcb/visual/mcb_feature_scatterplot.Rmd">Treatment Effect to Genus Scatterplot</a></p></li>
+<li><p><a href="mcb/visual/mcb_picrust_fct.Rmd">PICRUSt Predicted Function Boxplots</a></p></li>
+<li><p><a href="mcb/visual/mcb_enterotype.Rmd">Enterotype</a></p></li>
+<li><a href="mcb/visual/mcb_distance_analysis.Rmd">Beta Diversity Distance PCoA Plots</a>
+<ul>
+<li>Beta diversity matrics were calculated using qiime2</li>
+</ul></li>
+<li><p><a href="mcb/visual/mcb_distance_analysis_2.Rmd">Beta Diversity 2</a></p></li>
+<li><p><a href="mcb/visual/mcb_heatmap.Rmd">Heatmap</a></p></li>
+</ul>
+</div>
+<div id="cladogram" class="section level3">
+<h3><em>Cladogram</em></h3>
+<ul>
+<li><a href="mcb/visual/mcb_cladogram.Rmd">Cladogram</a>
+<ul>
+<li>Not working anymore</li>
+</ul></li>
+<li><a href="mcb/mcb_cladogram_microbiomeVis.html">Cladogram 2</a></li>
+</ul>
+</div>
+<div id="correlation-with-other-variables" class="section level3">
+<h3><em>Correlation with other Variables</em></h3>
+<div id="dietnutrient-data" class="section level4">
+<h4>Diet/Nutrient data</h4>
+<ul>
+<li><a href="mcb/visual/mcb_diet_corr.Rmd">Micobiome vs Diet</a></li>
+</ul>
+</div>
+<div id="clinical-values" class="section level4">
+<h4>Clinical Values</h4>
+<ul>
+<li><a href="mcb/visual/mcb_clinical_corr.Rmd">Microbiome vs Clinical Values</a></li>
+</ul>
+</div>
+<div id="short-chain-fatty-acids-1" class="section level4">
+<h4>Short Chain Fatty Acids</h4>
+<ul>
+<li><a href="mcb/visual/mcb_scfa_corr.Rmd">Microbiome Correlation with SCFA</a>
+<ul>
+<li>Butyric acid is <strong>not</strong> correlated with Butyriciccocus.</li>
+</ul></li>
+</ul>
+</div>
+<div id="biogenic-amines-1" class="section level4">
+<h4>Biogenic Amines</h4>
+<ul>
+<li><a href="mcb/visual/mcb_bga_corr.Rmd">Microbioem Correlation with Biogenic Amines</a>
+<details>
+<summary>Show the Notes</summary>
+<p>
+<ol>
+<li>
+Subjects 110 and 114 have high levels of indole-3 lactic acid and zero/low Bifs, Coprococcus_1, zero Lachnospiraceae_UCG-010
+</li>
+<li>
+Butyrylcarnitine is very strongly negatively associated with Roseburia. BlautiaNico
+</li>
+<li>
+Nicotinamide very strongly negatively associated with Fusicatenibacter
+</li>
+<li>
+3-indoleacetic acid and indole-3-proprionic acid are very high in Subject 113; also N-Methylproline
+</li>
+<li>
+Subject 113 also has high Bifidobacteria, zero/low Roseburia, Subdoligranulum, Coprococcus_1, Coprcoccus_3, several Ruminococceacea
+</li>
+<li>
+Subject 114 (the high Akkermansia subject) has zero Faecalibacterium
+</li>
+<li>
+Subject 114 also has low plasma choline
+</li>
+<li>
+on the other hand, subject 110 Pre and Post Med had high choline and high Faecalibacterium
+</li>
+<li>
+Subject 116 (high baseline meat diet), has high Cortisol-21-sulfate, highest Pre and Post FF diet, lower Pre and Post Med
+</li>
+<li>
+Subject 116 also had high Ruminococcaceae_NK4A214_group, which was higher Pre and Post FF than Pre and Post Med
+</li>
+<li>
+Glycodeoxycholic acid negatively associated with Erysipelotrichaceae_UCG-003
+<li>
+Creatinine positively associated with Lachnospiraceae_ND3007_group, negatively with Ruminococcus_1
+</li>
+<li>
+L-proprionylcarnitine negatively associated with Blautia, positively with Bifidobacteria
+</li>
+<li>
+indole-6-carboxaldehyde is high in Subject 114 Pre Med, also high in this subject at this time point: Varibaculum, Anaerococcus, Negativicoccus, Finegoldia
+</li>
+<li>
+Look at graph Indole-6-carboxaldehyde vs. Dysgonomonas: see almost perfect positive association between this bacterium and this metabolite in Subject 114 only! Looks like Pre Med to Post Med change is: high Dysgonomonas and high indole-6-carboxaldehyde, then Dysgonomonas goes almost to zero and indole-6-carboxaldehyde goes down by 100%
+</li>
+<li>
+This looks like it could be a direct relationship: that Dysgonomonas produces indole-6-carboxaldehyde, and that presence of Varibaculum, Anaerococcus, Negativicoccus, Finegoldia help induce that process somehow
+</li>
+<li>
+Ruminococcus_1 and Ruminococcus_2 negatively associated with Kynurenine, Coprococcus_3 and Parabecteroides positively associated
+</li>
+<li>
+114 Pre Med also had high levels of 4-(1-Piperzinyl)-1H-indole
+</li>
+<li>
+Carnitine negatively associated with Blautia
+</li>
+<li>
+Isoleucine negatively associated with Erysipelotrichaceae_UCG-003
+</li>
+<li>
+Isoleucine also has same relationship with Subject 114 and Dysgonomonas
+</li>
+<li>
+Oleoyl-L-carnitine positively associated with Lachnospiraceae_ND3007_group and Roseburia, negatively associated with Bifidobacterium and Fusicatenibacter
+</li>
+<li>
+1-O-Hexadecyl-2-O-(2E-butenoyl)-sn-glyceryl-3-phosphocholine negatively associated with Bilophila and positively with Lachnospiraceae_ND3007_group
+</li>
+</ol>
+<br /><b>TMAO:</b>
+<ol>
+<li>
+Subject 109 Pre Med had highest levels of TMAO, which decreased from 92,000 to 18,000
+</li>
+<li>
+Importantly: in Subject 109 from Pre Med to Post Med Corynebacterium_1 went from being present to being absent, everyone else has zero of this bacterium at all time points!
+</li>
+<li>
+109 Pre Med also had high Erysipelotrichaceae_UCG-004, Actinomyces, Lactobacillus, Solobacterium, Gemella
+</li>
+<li>
+In subject 109 Pre Med to Post Med Lactobacillus decreased from 4% to 2%
+</li>
+<li>
+In subject 108 Pre to Post FF Methanobrevibacter increased from 0.07397% (everyone else has zero!) to 1%, and TMAO increased from 11,000 to 57,000!
+</li>
+<li>
+Subject 109 Pre Med has high Bifidobacteria and high TMAO, but no relationship between TMAO and Bifidobacteria in other subjects
+</li>
+<li>
+In subject 112 Pre FF to Post FF TMAO decreases from 64,000 to 22,000, Alloprevotella also decreases; Pre Med to Post Med TMAO decreases from 30,000 to 21,000 and again Alloprevotella decreases; everyone else has zero Alloprevotella at all time points
+</li>
+<li>
+Interestingly, subject 112 has zero Bilophila at all time points
+</li>
+<li>
+Subject 118 TMAO increases from 8,000 to 25,000, and Parasutterella decreases from 1% to 0.6% on FF diet, but on Med diet both TMAO and Parasutterella stay the same; everyone else has zero Parasutterella
+</li>
+<li>
+In Subject 116 (high baseline meat diet!) TMAO decreases slightly from 27,000 to 23,000 on FF diet, but on Med diet TMAO increases from 20,000 to 66,000!
+</li>
+<li>
+In Subject 116 Faecalitalea decreases from 0.1% to zero on FF diet, but increases from 0.1% to 0.15% on Med diet
+</li>
+<li>
+In Subject 116 Pre to Post Med Mogibacterium increases from zero to .014%
+</li>
+<li>
+In Subject 108 Pre to post FF TMAO increases from 11,000 to 57,000 and Catenisphaera increases from 4.2% to 6.4%, Phascolarctobacterium decreases from 0.7% to 0.25%, Anaerofilum decreases from 0.2% to zero, Barnesiella increases from 0.2% to 0.5%, Gemella decreases from 0.03% to 0.01%, Rothia increases from zero to 0.02%, Akkermansia increases from zero to 0.4%, Collinsella increases from 1.4% to 3.5%
+</li>
+<li>
+In Subject 108 Pre to Post Med TMAO doesn’t change (27,000 - 28,000), Catenisphaera decreases from 4.8% to 2.7%, Phascolarctobacterium decreases from 0.7% to 0.5%, Anaerofilum doesn’t change
+</li>
+<li>
+In Subject 108 Post FF Anaerotruncus
+</li>
+</ol>
+</p>
+</details></li>
+<li><p><a href="mcb/visual/mcb_bga_corr_lm.Rmd">vs Biogenic Amines using linear model</a></p></li>
+<li><p><a href="mcb/visual/mcb_bga_corr_scatterplot.Rmd">vs Biogenic Amines FF and Med separated</a></p></li>
+</ul>
+</div>
+<div id="baseline-food-intakes" class="section level4">
+<h4>Baseline Food Intakes</h4>
+<ul>
+<li><a href="mcb/visual/mcb_blf_corr.Rmd">Microbiome Correlation with Baseline Food Intakes</a>
+<details>
+<summary>Show the Notes</summary>
+<ol>
+<li>
+Baseline dairy intake is positively associated with Bilophila on the FF diet but not on the Med diet.
+</li>
+<li>
+Same is true for Dorea
+</li>
+<li>
+But opposite is true for Veilonella
+</li>
+<li>
+This suggests that higher baseline dairy intake predisposes for a Bilophila “bloom” in the context of a high saturated fat diet
+</li>
+<li>
+Baseline vegetable intake negatively associated with Ruminococcus_NK4A214_group on Med diet but not on FF diet.
+</li>
+<li>
+This bacterium seems to be increased in mice with type 2 diabetes and is decreased by inulin intake: <a href="https://peerj.com/articles/4446/">peerj.com/articles/4446/</a>
+</li>
+<li>
+Subject 109 had very high intake of desserts, about double that of everyone else in the study
+</li>
+<li>
+Subject 110 had very high egg, fruit and legume intake, about 9X that of everyone else; also very high alcohol intake!
+</li>
+<li>
+Vegetable intake is a nice variable because we have a nice spread across the range from 0 g/d to 800 g/d
+</li>
+<li>
+Subject 113 also had high legume intake
+</li>
+<li>
+Subject 116 had very high meat intake
+</li>
+<li>
+Subjects 108, 112, 114, 116 and 118 had either zero or very low intake of coffee/tea whereas 107, 109, 110, 111, and 113 had between 200-500 g/d coffee/tea intake; it would be interesting to see whether when you make the subjects into groups (coffee/tea drinkers vs. non-drinkers) whether you get significant differences in microbiota and biogenic amines
+</li>
+</ol>
+</details></li>
+</ul>
+</section>
+<!-- begin wwww.htmlcommentbox.com -->
+<div id="HCB_comment_box">
+<pre><code>&lt;hr&gt;
+&lt;a href=&quot;http://www.htmlcommentbox.com&quot;&gt;Widget&lt;/a&gt; 
+is loading comments...</code></pre>
+</div>
+<link rel="stylesheet" type="text/css" href="//www.htmlcommentbox.com/static/skins/bootstrap/twitter-bootstrap.css?v=0" />
+<script type="text/javascript" id="hcb"> /*<!--*/ if(!window.hcb_user){hcb_user={comments_header:'Leave A Comment'};} (function(){var s=document.createElement("script"), l=hcb_user.PAGE || (""+window.location).replace(/'/g,"%27"), h="//www.htmlcommentbox.com";s.setAttribute("type","text/javascript");s.setAttribute("src", h+"/jread?page="+encodeURIComponent(l).replace("+","%2B")+"&mod=%241%24wq1rdBcg%24X.dWI40gANxmDig9e3e740"+"&opts=16863&num=10&ts=1525975738193");if (typeof s!="undefined") document.getElementsByTagName("head")[0].appendChild(s);})(); /*-->*/ </script>
+<!-- end www.htmlcommentbox.com -->
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+.navbar-brand{
+    font-size: 160%;
+    font-weight: bold
+}
+ul.nav{
+    font-size: 110% !important;
+}
+
+h1{
+  font-size: 38px;
+  color: DarkRed;
+  text-align: center;
+  margin-bottom: 3%;
+  margin-top: 3%;
+}
+
+.figure > img{
+    width: 80%;
+}
+
+section.main-body ul{
+    font-size: 110%;
+}
+
+section.main-body p{
+    font-size: 110%;
+}
+
+h4{
+	color: #000000;
+}
+
+.grViz{
+	margin: 0 20%;
+}
+
+svg{
+    width: 80% !important;
+    margin: 0 !important;
+}
+
+details{
+    background: #868686;
+    border-radius: 10px;
+    padding:1.5%;
+}
+details:hover{
+    border: 3px solid rgba(143, 30, 30, 0.42);
+}
+details>ol{
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 3% 6%;
+}
+details li{
+    margin-bottom: 0.5%;
+}
+summary{
+    color: white;
+    font-weight: bold;
+}
+
+/*-- HCB style --*/
+
+#HCB_comment_box{
+    border: 2px solid #FFFFFF; 
+    border-radius: 5px; 
+    padding: 10px; 
+    color:#FFFFFF; 
+    background: rgba(0, 0, 0, 0.5);
+    margin-top: 20%;
+}
+.hcb-mod b{
+    color:#0088AF;
+}
+#HCB_comment_box textarea,#HCB_comment_box input.text{
+    border-top:1px solid #e4e4e4;
+    border-left:1px solid #e4e4e4;
+    border-bottom:1px solid #eaeaea;
+    border-right:1px solid #eaeaea;
+    background-color:#f8f8f8;
+}
+#HCB_comment_box .hcb-wrapper-half{
+    display:block;
+    width:50%;
+    float:left;
+}
+#HCB_comment_box .hcb-wrapper{
+    clear:both;
+}
+#HCB_comment_box input.text{
+    display:block;width:95%;
+}
+#HCB_comment_box input.submit{
+    border-top:1px solid #FCB1A2;
+    border-left:1px solid #FCB1A2;
+    border-bottom:1px solid #BB2B0F;
+    border-right:1px solid #BB2B0F;
+    background-color:#F26646;
+    color:#000;
+    font-weight:bold;
+    cursor:pointer;
+}
+#HCB_comment_box div.comment{
+    color:#3d2b28; 
+    background: rgba(255, 255, 255, 0.91); 
+    border:3px double #F26646 ; 
+    margin:5px; 
+    padding:2px;
+}
+#HCB_comment_box .comment .likes{
+    color: #005200;
+}
+#HCB_comment_box .hcb-link{
+    color:#004458;
+    text-decoration:none;
+} 
+
+#HCB_comment_box > a{
+    display: none
+}
