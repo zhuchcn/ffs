@@ -16,7 +16,8 @@ data = list(
         bga = bga$bga,
         sfa = sfa$sfa,
         cli = mcb$cli,
-        diet = mcb$diet
+        diet = mcb$diet,
+        tree = mcb$tree
     ),
     diff = list(
         mcb = mcb$lm,

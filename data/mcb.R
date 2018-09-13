@@ -1,6 +1,6 @@
 ## -------------------------------------------------------------
 pkgs = c("dplyr", "stringr", "reshape2", "tibble", "data.table", "readxl", 
-         "tidyr", "Metabase", "Biostrings")
+         "tidyr", "Metabase", "ape")
 for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
             character.only=TRUE)
@@ -32,6 +32,8 @@ mcb = MicrobiomeSet(otu_table, sample_data, tax_table)
 sampleNames(mcb) = str_c("FFS",mcb$sample_table$SubjectID)
 mcb$sample_table$Subject = gsub("^FF", "", mcb$sample_table$StudyID)
 
+tree = read.tree("../raw_data/microbiome/tree.nwk")
+tree$tip.label = str_c("MCB", tree$tip.label)
 
 ################################################################################
 ##########             P I C R U S T   F U N C T I O N S              ##########
@@ -147,5 +149,5 @@ cli = Metabase::MultiSet(
 ################################################################################
 ##########                        E X P O R T                         ##########
 ################################################################################
-save(mcb, pcr, bga, sfa, diet, cli,
+save(mcb, pcr, bga, sfa, diet, cli, tree,
      file = "mcb.Rdata")

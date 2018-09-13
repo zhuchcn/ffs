@@ -50,6 +50,6 @@ corr_cli = corr_func(cli)
 corr_diet = corr_func(diet)
 
 ## -------- save ---------------------------------------------------------------
-save(mcb, bga, sfa, cli, diet,
+save(mcb, bga, sfa, cli, diet, tree,
      lm, corr_bga, corr_sfa, corr_cli, corr_diet,
      file = "../Rdata/mcb_precalc.Rdata")

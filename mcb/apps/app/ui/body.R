@@ -61,8 +61,63 @@ corrTabGen = function(tabName) {
     )
 }
 
-mcb_pca = tabItem(
-    tabName = "mcb_pcoa"
+mcb_pcoa = tabItem(
+    tabName = "mcb_pcoa",
+    fluidRow(
+        column(
+            width = 6,
+            box(width = NULL,
+                selectInput("mcb.pcoa.coef", "Unadjusted or Adjusted P Value?",
+                            choices = c("pvalue", "padj")),
+                numericInput("mcb.pcoa_cutoff", "Input a cutoff",
+                             min = 0, max = 1, value = 0.05, step = 0.001),
+                selectInput("mcb.ord_method", "Select a Ordinate Method: ",
+                            choices = phyloseq::ordinate("list")),
+                uiOutput("mcb.dist_method"))
+        ),
+        column(
+            width = 6,
+            box(width = NULL,
+                plotlyOutput("mcb.pcoa")
+            )
+        )
+    )
+)
+
+mcb_clado = tabItem(
+    tabName = "mcb_clado",
+    fluidRow(
+        column(
+            width = 12,
+            box(width = NULL,
+                plotOutput("mcb_clado_FF"))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 12,
+            box(width = NULL,
+                plotOutput("mcb_clado_Med"))
+        )
+    ),
+    fluidRow(
+        column(
+            width = 12,
+            box(width = NULL,
+                plotOutput("mcb_clado_mix"))
+        )
+    )
+)
+
+bga_tree = tabItem(
+    tabName = "bga_tree",
+    fluidRow(
+        column(
+            width = 8,
+            box(width = NULL, height = 900,
+                plotOutput("bga.tree"))
+        )
+    )
 )
 
 body = dashboardBody(
@@ -72,11 +127,13 @@ body = dashboardBody(
     tabItems(
         boxplotTabGen("mcb_boxplot"),
         histTabGen("mcb_hist"),
-        mcb_pca,
+        mcb_pcoa,
+        mcb_clado,
         corrTabGen("mcb_bga"),
         corrTabGen("mcb_sfa"),
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),
+        bga_tree,
         boxplotTabGen("sfa_boxplot")
     )
 )

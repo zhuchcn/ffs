@@ -6,8 +6,8 @@ sidebar = dashboardSidebar(
             icon = icon("caret-right"), "Micorbiome", 
             menuSubItem("Boxplot", tabName = "mcb_boxplot"),
             menuSubItem("Histogram", tabName = "mcb_hist"),
-            menuSubItem("Heatmap and PCoA", tabName = "mcb_pcoa"),
-            menuScubItem("Cladogram", tabName = "mcb_clado"),
+            menuSubItem("Ordinate Plots", tabName = "mcb_pcoa"),
+            menuSubItem("Cladogram", tabName = "mcb_clado"),
             menuSubItem("vs Biogenic Amines", tabName = "mcb_bga"),
             menuSubItem("vs Short Chain Fatty Acids", tabName = "mcb_sfa")
         ),
@@ -17,7 +17,8 @@ sidebar = dashboardSidebar(
         ),
         menuItem(
             icon = icon("caret-right"), "Biogenic Amines",
-            menuSubItem("Boxplot", tabName = "bga_boxplot")
+            menuSubItem("Boxplot", tabName = "bga_boxplot"),
+            menuSubItem("Structure Similarity Tree", tabName = "bga_tree")
         ),
         menuItem(
             icon = icon("caret-right"), "Short Chain Fatty Acids",
