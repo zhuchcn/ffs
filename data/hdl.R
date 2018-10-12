@@ -90,7 +90,7 @@ diet_data$Subject = factor(diet_data$Subject)
 diet_data$Treatment = factor(diet_data$Treatment)
 diet_data$Timepoint = factor(diet_data$Timepoint, levels = c("Pre", "Post"))
 
-Diet = MultiSet(
+Diet = MultxSet(
     conc_table = conc_table(t(diet_data[,-(1:4)])),
     sample_table = sample_table(diet_data[,1:4]),
     experiment_data = MultiExperimentData(experiment_type = "Dietary Nutrient")
@@ -119,13 +119,13 @@ tnfa = read_excel(
 pos = tnfa$`TNF-alpha (pg/mL)`[41]
 hdl_function$`TNF-a (pg/mL)` = 1 - (hdl_function$`TNF-a (pg/mL)`/pos)
 
-HDL_Function = MultiSet(
+HDL_Function = MultxSet(
     conc_table = conc_table(t(hdl_function[,5:12])),
     sample_table = sample_table(hdl_function[,1:4]),
     experiment_data = MultiExperimentData(experiment_type = "HDL Functions and Proteins")
 )
 clinical_data = clinical_data[, c(1:4, 7:9, 12:15, 21:29)]
-Clinical = MultiSet(
+Clinical = MultxSet(
     conc_table = conc_table(t(clinical_data[, -(1:6)])),
     sample_table = sample_table(clinical_data[,1:6]),
     experiment_data = MultiExperimentData(experiment_type = "Clinical Values")
@@ -199,7 +199,7 @@ edata = edata[,rownames(pdata)]
 
 # construct the data list
 Glycopeptide = list(
-    peptide = MultiSet(
+    peptide = MultxSet(
         conc_table = conc_table(as.matrix(edata[is.na(fdata$`N/O glycan`),])),
         sample_table = sample_table(pdata),
         feature_data = feature_data(fdata[is.na(fdata$`N/O glycan`),]),

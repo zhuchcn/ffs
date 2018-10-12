@@ -18,7 +18,7 @@ picrust = lapply(1:3, function(l){
 })
 names(picrust) = c("level1","level2","level3")
 pct = lapply(picrust, function(lvl){
-    Metabase::MultiSet(
+    Metabase::MultxSet(
         conc_table = conc_table(as.matrix(lvl)), 
         sample_table = sample_table(
             sample_data(mcb)[,c("Treatment", "Timepoint", "Subject")]

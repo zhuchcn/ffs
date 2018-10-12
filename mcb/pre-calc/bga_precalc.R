@@ -3,9 +3,8 @@ for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
             character.only=TRUE)
 }
-
 ## -------- load data ----------------------------------------------------------
-setwd("~/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/analysis/mcb/pre-calc")
+setwd(dirname(parent.frame(2)$ofile))
 load('../../data/mcb.Rdata')
 
 ## -------- limma --------------------------------------------------------------

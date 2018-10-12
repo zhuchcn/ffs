@@ -5,7 +5,7 @@ for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
             character.only=TRUE)
 }
-setwd("~/Box Sync/UC Davis/Right Now/Researches/Zivkovic Lab/Fast Food Study/Data/between_assays_analysis/analysis/data")
+setwd(dirname(parent.frame(2)$ofile))
 
 ################################################################################
 ##########                    M I C R O B I O M E                     ##########
@@ -25,12 +25,16 @@ rownames(tax_table) = str_c(
 )
 
 otu_table = otu_table %>% as.matrix %>% conc_table()
+sample_data$Timepoint = factor(sample_data$Timepoint, 
+                               levels = c("Pre", "Post"))
+sample_data$Treatment = factor(sample_data$Treatment,
+                               levels = c("FF", "Med"))
+sample_data$Subject = gsub("^FF", "", sample_data$StudyID)
 sample_data = sample_table(sample_data)
 tax_table = feature_data(tax_table)
 mcb = MicrobiomeSet(otu_table, sample_data, tax_table)
 
 sampleNames(mcb) = str_c("FFS",mcb$sample_table$SubjectID)
-mcb$sample_table$Subject = gsub("^FF", "", mcb$sample_table$StudyID)
 
 tree = read.tree("../raw_data/microbiome/tree.nwk")
 tree$tip.label = str_c("MCB", tree$tip.label)
@@ -94,10 +98,38 @@ pdata = data.frame(
     Subject = mcb$sample_table$Subject,
     row.names = sampleNames(mcb)
 )
-sfa = Metabase::MultiSet(
+sfa = Metabase::MultxSet(
     conc_table = conc_table(edata),
     sample_table = sample_table(pdata),
     experiment_data = MultiExperimentData(experiment_type = "Short Chain Fatty Acids")
+)
+
+################################################################################
+##########                    B I L E   A C I D S                     ##########
+################################################################################
+path = "../raw_data/bile_acids/mx 351239 Zhu_bile acids_human plasma_09-2018 submit.xlsx"
+conc_range = "T9:BG31"
+sample_range = "S2:BG6"
+feature_range = "A8:S31"
+bac = import_wcmc_excel(
+    file = path, 
+    sheet = "Final Submit", 
+    conc_range = conc_range, 
+    sample_range = sample_range, 
+    feature_range = feature_range, 
+    InChIKey = "InChIKey"
+)
+sampleNames(bac) = gsub("\\d{1,2}-FFS-(\\d{3})-([A-D]{1})", "FFS\\1\\2", sampleNames(bac))
+featureNames(bac) = bac$feature_data$name
+bac$sample_table$Subject = mcb$sample_table$Subject
+bac$sample_table$Timepoint = mcb$sample_table$Timepoint
+bac$sample_table$Treatment = mcb$sample_table$Treatment
+
+## remove features with more than 10 observations smaller than the LOQ
+bac = subset_features(
+    bac, 
+    sapply(1:nfeatures(bac), function(i)
+        sum(bac$conc_table[i,] <= bac$feature_data$`LOQ (nM)`[i]) <= 10)
 )
 
 ################################################################################
@@ -119,10 +151,10 @@ rownames(diet_data) = str_c('FFS',diet_data[,"Subject ID"], diet_data[,'Timepoin
 colnames(diet_data)[c(2,4)] = colnames(diet_data)[c(4,2)]
 colnames(diet_data)[1] = "Subject"
 diet_data$Subject = factor(diet_data$Subject)
-diet_data$Treatment = factor(diet_data$Treatment)
+diet_data$Treatment = factor(diet_data$Treatment, levels = c("FF", "Med"))
 diet_data$Timepoint = factor(diet_data$Timepoint, levels = c("Pre", "Post"))
 
-diet = Metabase::MultiSet(
+diet = Metabase::MultxSet(
     conc_table = conc_table(t(diet_data[,-(1:4)])),
     sample_table = sample_table(diet_data[,1:4]),
     experiment_data = MultiExperimentData(experiment_type = "Dietary Nutrient")
@@ -140,7 +172,7 @@ clinical_data = mutate(clinical_data,
                        `HDL ApoA1 (per ug total protein)` = `HDL ApoA1`/`HDL Total Protein`)
 rownames(clinical_data) = rownames(diet_data)
 clinical_data = clinical_data[, c(1:4, 7:9, 12:15, 21:29)]
-cli = Metabase::MultiSet(
+cli = Metabase::MultxSet(
     conc_table = conc_table(t(clinical_data[, -(1:6)])),
     sample_table = sample_table(clinical_data[,1:6]),
     experiment_data = MultiExperimentData(experiment_type = "Clinical Values")
@@ -149,5 +181,5 @@ cli = Metabase::MultiSet(
 ################################################################################
 ##########                        E X P O R T                         ##########
 ################################################################################
-save(mcb, pcr, bga, sfa, diet, cli, tree,
+save(mcb, pcr, bga, sfa, bac, diet, cli, tree,
      file = "mcb.Rdata")

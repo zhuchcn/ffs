@@ -25,10 +25,12 @@ corr_func = function(covar){
 }
 
 corr_bga = corr_func(bga)
+corr_bac = corr_func(bac)
 corr_sfa = corr_func(sfa)
 corr_cli = corr_func(cli)
 corr_diet = corr_func(diet)
 
 ## -------- save ---------------------------------------------------------------
-save(pcr, bga, sfa, cli, diet, ds, corr_bga, corr_sfa, corr_cli, corr_diet,
+save(pcr, bga, bac, sfa, cli, diet, 
+     ds, corr_bga, corr_bac, corr_sfa, corr_cli, corr_diet,
      file = "../Rdata/pcr_precalc.Rdata")

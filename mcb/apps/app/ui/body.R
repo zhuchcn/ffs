@@ -120,6 +120,33 @@ bga_tree = tabItem(
     )
 )
 
+mcb_richness = tabItem(
+    tabName = "mcb_richness",
+    fluidRow(
+        column(
+            width = 6,
+            box(width = NULL,
+                DTOutput("mcb_richness_limma"))
+        ),
+        column(
+            width = 6,
+            box(width = NULL,
+                plotlyOutput("mcb_richness_plot"))
+        )
+    )
+)
+
+mcb_scatter = tabItem(
+    tabName = "mcb_scatter",
+    fluidRow(
+        column(
+            width = 8,
+            box(width = NULL,
+                plotOutput("mcb_genus_scatter"))
+        )
+    )
+)
+
 body = dashboardBody(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
@@ -127,13 +154,17 @@ body = dashboardBody(
     tabItems(
         boxplotTabGen("mcb_boxplot"),
         histTabGen("mcb_hist"),
+        mcb_richness,
         mcb_pcoa,
         mcb_clado,
+        mcb_scatter,
         corrTabGen("mcb_bga"),
+        corrTabGen("mcb_bac"),
         corrTabGen("mcb_sfa"),
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),
         bga_tree,
+        boxplotTabGen("bac_boxplot"),
         boxplotTabGen("sfa_boxplot")
     )
 )

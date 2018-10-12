@@ -45,11 +45,12 @@ corr_func = function(covar){
 }
 
 corr_bga = corr_func(bga)
+corr_bac = corr_func(bac)
 corr_sfa = corr_func(sfa)
 corr_cli = corr_func(cli)
 corr_diet = corr_func(diet)
 
 ## -------- save ---------------------------------------------------------------
-save(mcb, bga, sfa, cli, diet, tree,
-     lm, corr_bga, corr_sfa, corr_cli, corr_diet,
+save(mcb, bga, bac, sfa, cli, diet, tree,
+     lm, corr_bga, corr_bac, corr_sfa, corr_cli, corr_diet,
      file = "../Rdata/mcb_precalc.Rdata")

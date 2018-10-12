@@ -27,7 +27,7 @@ output$VarsInput = renderUI({
                         selected = names(data$data$pcr)[1]),
             methodSelector(type, corr_methods)
         )
-    }else if(type == "bga"){
+    }else if(type %in% c("bga", "bac")){
         tagList(
             methodSelector(type, corr_methods)
         )
