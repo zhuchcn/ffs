@@ -1,4 +1,5 @@
-bac_diff = data$diff$bac %>%
+bac_diff = reactive({
+    data$diff$bac[[input$bac.level]] %>%
         rownames_to_column("Feature") %>%
         arrange(pvalue) %>%
         sapply(function(col){
@@ -7,20 +8,21 @@ bac_diff = data$diff$bac %>%
         }) %>%
         as.data.frame %>%
         column_to_rownames("Feature")
+})
 
 output$bac_diff = renderDT(
-    bac_diff, 
+    bac_diff(), 
     selection = list(mode = "single", selected = 1),
     server=T
 )
 
 bac_boxplot_selector = reactive({
-    rownames(bac_diff)[input$bac_diff_rows_selected]
+    rownames(bac_diff())[input$bac_diff_rows_selected]
 })
 
 output$bac_boxplot = renderPlotly({
     p = Metabase::plot_boxplot(
-        data$data$bac, 
+        data$data$bac[[input$bac.level]], 
         feature = bac_boxplot_selector(),
         x = "Timepoint", 
         cols = "Treatment",

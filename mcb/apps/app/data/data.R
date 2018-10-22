@@ -24,7 +24,7 @@ data = list(
         mcb = mcb$lm,
         pcr = pcr$ds,
         bga = bga$limma_table,
-        bac = bac$limma_table,
+        bac = bac$limma_list,
         sfa = sfa$limma_table
     ),
     corr = list(

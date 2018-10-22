@@ -27,7 +27,13 @@ output$VarsInput = renderUI({
                         selected = names(data$data$pcr)[1]),
             methodSelector(type, corr_methods)
         )
-    }else if(type %in% c("bga", "bac")){
+    }else if (type == "bac"){
+        tagList(
+            selectInput("bac.level", "Select the level:",
+                        choices = names(data$data$bac),
+                        selected = names(data$data$bac)[1])
+        )
+    }else if(type %in% c("bga")){
         tagList(
             methodSelector(type, corr_methods)
         )

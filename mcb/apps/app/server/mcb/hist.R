@@ -20,11 +20,12 @@ output$mcb_hist_padj = renderPlotly({
 output$mcb_volcano = renderPlotly({
     p = mcb_diff_table() %>%
         rownames_to_column("Feature") %>%
-        mutate(`P < 0.05` = pvalue < 0.05) %>%
-        ggplot(aes(x = logFC, y = baseMean, 
-                   Feature = Feature, pvalue = pvalue,
-                   padj = padj)) +
-        geom_point(aes(color = `P < 0.05`)) +
+        # mutate(`P < 0.05` = pvalue < 0.05) %>%
+        ggplot() +
+        geom_point(aes(x = logFC, y = -log(pvalue), Feature = Feature, 
+                       pvalue = pvalue, padj = padj),
+                   shape = 21, size=2, color = "white", fill = "gray19", alpha = 0.75) +
+        geom_hline(yintercept = 2.99, color = "red", linetype = "dashed") +
         scale_color_lancet() +
         theme_bw()
     ggplotly(p)
