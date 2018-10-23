@@ -20,6 +20,13 @@ mcb = list(
     proportion = mcb_prop
 )
 
+mcb = lapply(
+    mcb, function(li){
+        lapply(li, function(mset) 
+               subset_features(mset, featureNames(mset) != "NA"))
+    }
+)
+
 ## -------- stats --------------------------------------------------------------
 design = model.matrix(data = as(mcb$count$kingdom$sample_table, "data.frame"), 
                       ~Treatment*Timepoint + Subject)
