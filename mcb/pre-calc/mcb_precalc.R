@@ -8,6 +8,7 @@ for(pkg in pkgs){
 load("../../data/mcb.Rdata")
 ## -------- summarize ----------------------------------------------------------
 mcb = as_phyloseq(mcb)
+mcb = phylox::fix_duplicate_tax(mcb)
 mcb_count = summarizeFromPhyloseq(mcb) %>%
     as_MicrobiomeSetList()
 mcb_prop = transform_sample_counts(mcb, function(x) x/sum(x, na.rm = TRUE)) %>%
