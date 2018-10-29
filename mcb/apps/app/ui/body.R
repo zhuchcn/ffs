@@ -160,9 +160,7 @@ mcb_bac_corr = tabItem(
             box(width = NULL,
                 column(
                     width = 6,
-                    selectInput("mcb.bac.level", "Select Bile Acids Level",
-                                    choices = names(data$data$bac),
-                                    selected = names(data$data$bac)[1])
+                    uiOutput("mcb_bac_level_Selector")
                 ),
                 column(width = 6, uiOutput("mcb_bac_Selector")  
                 )),

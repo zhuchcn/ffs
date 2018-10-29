@@ -1,3 +1,9 @@
+output$mcb_bac_level_Selector = renderUI({
+    selectInput("mcb.bac.level", "Select Bile Acids Level",
+                choices = names(data$data$bac),
+                selected = names(data$data$bac)[1])
+})
+
 output$mcb_bac_Selector = renderUI({
     choices = featureNames(data$data$bac[[input$mcb.bac.level]])
     selectInput("mcb_bac", "Select A Bile Acid Variable",
