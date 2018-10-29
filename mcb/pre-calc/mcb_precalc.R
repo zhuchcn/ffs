@@ -6,6 +6,7 @@ for(pkg in pkgs){
             character.only=TRUE)
 }
 load("../../data/mcb.Rdata")
+load("../Rdata/bac_precalc.Rdata")
 ## -------- summarize ----------------------------------------------------------
 mcb = as_phyloseq(mcb)
 mcb = phylox::fix_duplicate_tax(mcb)
@@ -53,10 +54,10 @@ corr_func = function(covar){
 }
 
 corr_bga = corr_func(bga)
-corr_bac = corr_func(bac)
 corr_sfa = corr_func(sfa)
 corr_cli = corr_func(cli)
 corr_diet = corr_func(diet)
+corr_bac = lapply(bac, function(covar) corr_func(covar))
 
 ## -------- save ---------------------------------------------------------------
 save(mcb, bga, bac, sfa, cli, diet, tree,

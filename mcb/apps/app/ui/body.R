@@ -147,6 +147,31 @@ mcb_scatter = tabItem(
     )
 )
 
+mcb_bac_corr = tabItem(
+    tabName = "mcb_bac",
+    fluidRow(
+        column(
+            width = 6,
+            box(width = NULL,
+                DTOutput("mcb_bac_dt"))
+        ),
+        column(
+            width = 6,
+            box(width = NULL,
+                column(
+                    width = 6,
+                    selectInput("mcb.bac.level", "Select Bile Acids Level",
+                                    choices = names(data$data$bac),
+                                    selected = names(data$data$bac)[1])
+                ),
+                column(width = 6, uiOutput("mcb_bac_Selector")  
+                )),
+            box(width = NULL,
+                plotlyOutput("mcb_bac_scatter"))
+        )
+    )
+)
+
 body = dashboardBody(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
@@ -159,7 +184,7 @@ body = dashboardBody(
         mcb_clado,
         mcb_scatter,
         corrTabGen("mcb_bga"),
-        corrTabGen("mcb_bac"),
+        mcb_bac_corr,
         corrTabGen("mcb_sfa"),
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),

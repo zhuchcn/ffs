@@ -1,11 +1,11 @@
 output$mcb_bac_Selector = renderUI({
-    choices = featureNames(data$data$bac)
-    selectInput("mcb_bac", "Select A Biogenic Amine",
+    choices = featureNames(data$data$bac[[input$mcb.bac.level]])
+    selectInput("mcb_bac", "Select A Bile Acid Variable",
                 choices = choices, selected = choices[1])
 })
 
 mcb_bac_dt = reactive({
-    data$corr$mcb$bac[[input$mcb.norm]][[input$mcb.level]][[input$mcb.method]][[input$mcb_bac]] %>%
+    data$corr$mcb$bac[[input$mcb.bac.level]][[input$mcb.norm]][[input$mcb.level]][[input$mcb.method]][[input$mcb_bac]] %>%
         rownames_to_column("Feature") %>%
         arrange(pval) %>%
         sapply(function(col){
@@ -28,10 +28,10 @@ mcb_bac_selector = reactive({
 output$mcb_bac_scatter = renderPlotly({
     df = data.frame(
         x = as.numeric(data$data$mcb[[input$mcb.norm]][[input$mcb.level]]$conc_table[mcb_bac_selector(),]),
-        y = data$data$bac$conc_table[input$mcb_bac,],
-        Treatment = data$data$bac$sample_table$Treatment,
-        Timepoint = data$data$bac$sample_table$Timepoint,
-        Subject = data$data$bac$sample_table$Subject
+        y = data$data$bac[[input$mcb.bac.level]]$conc_table[input$mcb_bac,],
+        Treatment = data$data$bac[[input$mcb.bac.level]]$sample_table$Treatment,
+        Timepoint = data$data$bac[[input$mcb.bac.level]]$sample_table$Timepoint,
+        Subject = data$data$bac[[input$mcb.bac.level]]$sample_table$Subject
     )
     p = ggscatterplot(df, "x", "y", color = "Subject", color.pal = pal_jama()(7)) +
         labs(x = paste0(mcb_bac_selector(), " [", input$mcb.norm, "]"), 

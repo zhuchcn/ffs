@@ -1,4 +1,8 @@
 sidebar = dashboardSidebar(
+    sidebarMenu(
+        menuItem("Home", icon = icon("home"), newtab = FALSE,
+                 href="http://www.chenghaozhu.net/studies/ffs/")
+    ),
     uiOutput("VarsInput"),
     sidebarMenu(
         id = "sidebar",
