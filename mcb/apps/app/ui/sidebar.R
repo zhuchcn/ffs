@@ -28,7 +28,8 @@ sidebar = dashboardSidebar(
             icon = icon("caret-right"), 
             text = "Biogenic Amines",
             menuSubItem("Boxplot", tabName = "bga_boxplot"),
-            menuSubItem("Structure Similarity Tree", tabName = "bga_tree")
+            menuSubItem("Structure Similarity Tree", tabName = "bga_tree"),
+            menuSubItem("vs Biogenic Amines", tabName = "bga_bga")
         ),
         menuItem(
             icon = icon("caret-right"), 

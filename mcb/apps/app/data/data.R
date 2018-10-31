@@ -1,3 +1,4 @@
+setwd(dirname(parent.frame(2)$ofile))
 mcb = new.env()
 load("../../../Rdata/mcb_precalc.Rdata", envir = mcb)
 pcr = new.env()
@@ -43,6 +44,7 @@ data = list(
             diet = mcb$corr_diet
         ),
         bga = list(
+            bga = bga$corr_bga,
             sfa = bga$corr_sfa
         ),
         bac = list(

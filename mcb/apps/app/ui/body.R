@@ -187,6 +187,7 @@ body = dashboardBody(
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),
         bga_tree,
+        corrTabGen("bga_bga"),
         boxplotTabGen("bac_boxplot"),
         boxplotTabGen("sfa_boxplot")
     )

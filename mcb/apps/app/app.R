@@ -31,6 +31,7 @@ server <- function(input, output) {
     source("server/pcr/boxplot.R", local = TRUE)
 
     source("server/bga/boxplot.R", local = TRUE)
+    source("server/bga/corr_bga.R", local = TRUE)
     source("server/bga/tree.R", local = TRUE)
     
     source("server/bac/boxplot.R", local = TRUE)
