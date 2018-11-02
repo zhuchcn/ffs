@@ -1,0 +1,81 @@
+---
+title: "Shot Chain FA"
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, error = FALSE)
+```
+
+```{r}
+pkgs = c("dplyr", "reshape2", "tibble", "stringr", "ggplot2", "Metabase", "plotly")
+for(pkg in pkgs){
+    library(pkg, character.only = TRUE, quietly = TRUE,
+            warn.conflicts = FALSE, verbose = FALSE)
+}
+```
+
+```{r}
+load("../Rdata/sfa_precalc.Rdata")
+
+sfa$sample_table = sfa$sample_table %>%
+    rownames_to_column("sample_id") %>%
+    mutate(blooddraw = str_split(sample_id, "", simplify = T)[,7]) %>%
+    group_by(Subject) %>%
+    mutate(TX_order = Treatment[blooddraw == "A"]) %>%
+    as.data.frame() %>%
+    column_to_rownames("sample_id") %>%
+    sample_table
+```
+
+```{r}
+selectInput("sfa", "Select a SCFA", choices = featureNames(sfa), selected = "Butyric acid")
+```
+
+```{r}
+renderPlotly({
+    mset = subset_samples(sfa, with(sfa$sample_table, TX_order == "FF"))
+    data.frame(
+        sfa = mset$conc_table[input$sfa,],
+        Subject = mset$sample_table$Subject,
+        Timepoint = mset$sample_table$Timepoint,
+        Treatment = mset$sample_table$Treatment
+    ) %>%
+        mutate(TX_point = factor(
+            interaction(Timepoint, Treatment),
+            c("Pre.FF", "Post.FF", "Pre.Med", "Post.Med")
+        )) %>%
+        ggplot(aes(TX_point, sfa)) +
+        geom_boxplot() +
+        geom_point(aes(color = Subject)) +
+        geom_line(aes(group = Subject, color = Subject)) +
+        labs(title = "TX_order: FF-Med",
+             x = "", y = input$sfa) +
+        theme_bw() +
+        theme(legend.position = "none")
+})
+```
+
+```{r}
+renderPlotly({
+    mset = subset_samples(sfa, with(sfa$sample_table, TX_order == "Med"))
+    data.frame(
+        sfa = mset$conc_table[input$sfa,],
+        Subject = mset$sample_table$Subject,
+        Timepoint = mset$sample_table$Timepoint,
+        Treatment = mset$sample_table$Treatment
+    ) %>%
+        mutate(TX_point = factor(
+            interaction(Timepoint, Treatment),
+            c("Pre.Med", "Post.Med", "Pre.FF", "Post.FF")
+        )) %>%
+        ggplot(aes(TX_point, sfa)) +
+        geom_boxplot() +
+        geom_point(aes(color = Subject)) +
+        geom_line(aes(group = Subject, color = Subject)) +
+        labs(title = "TX_order: Med-FF",
+             x = "", y = input$sfa) +
+        theme_bw() +
+        theme(legend.position = "none")
+})
+```
