@@ -62,8 +62,9 @@ limma_list = lapply(bac, function(li) mSet_limma(li, design, coef = 13, p.value 
 design2 = model.matrix(data=as(bac$raw$sample_table, "data.frame"), 
                        ~Subject + 1)
 
+corr_bga = lapply(bac, function(li) MatCorPack(X = bga$conc_table, Y = li$conc_table, design = design2))
 corr_sfa = lapply(bac, function(li) MatCorPack(X = sfa$conc_table, Y = li$conc_table, design = design2))
 
 ## -------- save ---------------------------------------------------------------
-save(bac, limma_list, corr_sfa, sfa,
+save(bac, limma_list, corr_sfa, sfa,corr_bga, bga,
      file = "../Rdata/bac_precalc.Rdata")

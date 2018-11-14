@@ -175,6 +175,7 @@ body = dashboardBody(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
     ),
     tabItems(
+        ## Microbiome
         boxplotTabGen("mcb_boxplot"),
         histTabGen("mcb_hist"),
         mcb_richness,
@@ -184,11 +185,17 @@ body = dashboardBody(
         corrTabGen("mcb_bga"),
         mcb_bac_corr,
         corrTabGen("mcb_sfa"),
+        ## Biogenic Amines
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),
         bga_tree,
         corrTabGen("bga_bga"),
+        corrTabGen("bga_sfa"),
+        ## Bile Acids
         boxplotTabGen("bac_boxplot"),
+        corrTabGen("bac_bga"),
+        corrTabGen("bac_sfa"),
+        ## Short Chain Fatty Acids
         boxplotTabGen("sfa_boxplot")
     )
 )

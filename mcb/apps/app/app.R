@@ -19,23 +19,32 @@ ui <- dashboardPage(
 server <- function(input, output) {
     source("ui/inputs.R", local = TRUE)
     
+    ## Microbiome
     source("server/mcb/boxplot.R", local = TRUE)
     source("server/mcb/hist.R", local = TRUE)
     source("server/mcb/corr_bga.R", local = TRUE)
     source("server/mcb/corr_bac.R", local = TRUE)
+    source("server/mcb/corr_sfa.R", local = TRUE)
     source("server/mcb/clado.R", local = TRUE)
     source("server/mcb/pcoa.R", local = TRUE)
     source("server/mcb/richness.R", local = TRUE)
     source("server/mcb/scatter.R", local = TRUE)
     
+    ## PICRUSt functions
     source("server/pcr/boxplot.R", local = TRUE)
 
+    ## Biogenic Amines
     source("server/bga/boxplot.R", local = TRUE)
     source("server/bga/corr_bga.R", local = TRUE)
+    source("server/bga/corr_sfa.R", local = TRUE)
     source("server/bga/tree.R", local = TRUE)
     
+    ## Bile Acids
     source("server/bac/boxplot.R", local = TRUE)
+    source("server/bac/corr_bga.R", local = TRUE)
+    source("server/bac/corr_sfa.R", local = TRUE)
     
+    ## Short Chain Fatty Acids
     source("server/sfa/boxplot.R", local = TRUE)
 }
 

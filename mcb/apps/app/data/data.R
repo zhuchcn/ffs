@@ -48,6 +48,7 @@ data = list(
             sfa = bga$corr_sfa
         ),
         bac = list(
+            bga = bac$corr_bga,
             sfa = bac$corr_sfa
         )
     )

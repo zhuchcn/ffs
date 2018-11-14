@@ -6,8 +6,8 @@ methodSelector = function(type, choices){
 }
 
 output$VarsInput = renderUI({
-    type = substr(input$sidebar, 1, 3)
     
+    type = substr(input$sidebar, 1, 3)
     corr_methods = names(data$corr$bga$sfa)
     
     if(type == "mcb") {
@@ -29,6 +29,7 @@ output$VarsInput = renderUI({
         )
     }else if (type == "bac"){
         tagList(
+            methodSelector(type, corr_methods),
             selectInput("bac.level", "Select the level:",
                         choices = names(data$data$bac),
                         selected = names(data$data$bac)[1])
