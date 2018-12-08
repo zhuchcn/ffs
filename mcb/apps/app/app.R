@@ -38,6 +38,7 @@ server <- function(input, output) {
     source("server/bga/corr_bga.R", local = TRUE)
     source("server/bga/corr_sfa.R", local = TRUE)
     source("server/bga/tree.R", local = TRUE)
+    source("server/bga/structures.R", local = TRUE)
     
     ## Bile Acids
     source("server/bac/boxplot.R", local = TRUE)

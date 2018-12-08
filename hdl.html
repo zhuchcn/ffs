@@ -1,236 +1,46 @@
 <!DOCTYPE html>
-
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<html lang="en">
 <head>
-
-  <meta charset="utf-8" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="generator" content="pandoc" />
-
-
-
-
-  <title>HDL Composition and Function</title>
-
-  <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
-  <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
-  <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
-  <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
-  <script src="site_libs/navigation-1.1/tabsets.js"></script>
-  <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
-  <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-  <link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
-  <script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
-  <script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
-
-  <style type="text/css">
-    code {
-      white-space: pre;
-    }
-  </style>
-  <style type="text/css">
-    pre:not([class]) {
-      background-color: white;
-    }
-  </style>
-  <script type="text/javascript">
-    if (window.hljs) {
-      hljs.configure({
-        languages: []
-      });
-      hljs.initHighlightingOnLoad();
-      if (document.readyState && document.readyState === "complete") {
-        window.setTimeout(function () {
-          hljs.initHighlighting();
-        }, 0);
-      }
-    }
-  </script>
-
-
-
-  <style type="text/css">
-    h1 {
-      font-size: 34px;
-    }
-
-    h1.title {
-      font-size: 38px;
-    }
-
-    h2 {
-      font-size: 30px;
-    }
-
-    h3 {
-      font-size: 24px;
-    }
-
-    h4 {
-      font-size: 18px;
-    }
-
-    h5 {
-      font-size: 16px;
-    }
-
-    h6 {
-      font-size: 12px;
-    }
-
-    .table th:not([align]) {
-      text-align: left;
-    }
-  </style>
-
-  <link rel="stylesheet" href="css/doc-styles.css" type="text/css" />
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/styles.css">
+  <title>Document</title>
 </head>
-
 <body>
 
-  <style type="text/css">
-    .main-container {
-      max-width: 940px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+  <!-- NAVBAR -->
+  <div class="navbar navbar-dark navbar-expand-lg navbar-fixed-top bg-dark" role="navigation">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Fast Food Study</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-    code {
-      color: inherit;
-      background-color: rgba(0, 0, 0, 0.04);
-    }
+      <div id="navbarSupportedContent" class="collapse navbar-collapse">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a href="hdl.html" class="nav-link active">HDL Composition and Function</a>
+          </li>
+          <li class="nav-item">
+            <a href="mcb.html" class="nav-link">Microbiome and Metabolome</a>
+          </li>
+        </ul>
 
-    img {
-      max-width: 100%;
-      height: auto;
-    }
-
-    .tabbed-pane {
-      padding-top: 12px;
-    }
-
-    .html-widget {
-      margin-bottom: 20px;
-    }
-
-    button.code-folding-btn:focus {
-      outline: none;
-    }
-  </style>
-
-
-  <style type="text/css">
-    /* padding for bootstrap navbar */
-    body {
-      padding-top: 51px;
-      padding-bottom: 40px;
-    }
-
-    /* offset scroll position for anchor links (for fixed navbar)  */
-    .section h1 {
-      padding-top: 56px;
-      margin-top: -56px;
-    }
-
-    .section h2 {
-      padding-top: 56px;
-      margin-top: -56px;
-    }
-
-    .section h3 {
-      padding-top: 56px;
-      margin-top: -56px;
-    }
-
-    .section h4 {
-      padding-top: 56px;
-      margin-top: -56px;
-    }
-
-    .section h5 {
-      padding-top: 56px;
-      margin-top: -56px;
-    }
-
-    .section h6 {
-      padding-top: 56px;
-      margin-top: -56px;
-    }
-  </style>
-
-  <script>
-    // manage active state of menu based on current page
-$(document).ready(function () {
-  // active menu anchor
-  href = window.location.pathname
-  href = href.substr(href.lastIndexOf('/') + 1)
-  if (href === "")
-    href = "index.html";
-  var menuAnchor = $('a[href="' + href + '"]');
-
-  // mark it active
-  menuAnchor.parent().addClass('active');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
-});
-</script>
-
-
-  <div class="container-fluid main-container">
-
-    <!-- tabsets -->
-    <script>
-      $(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-</script>
-
-    <!-- code folding -->
-
-
-
-
-
-
-    <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="index.html">Fast Food Study</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="hdl.html">HDL Composition and Function</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="mcb.html">Microbiome and Metabolome</a>
-            </li>
-          </ul>
-          <ul class="nav navbar-nav ml-auto">
-            <li class="nav-item">
-              <a href="http://www.chenghaozhu.net" class="nav-link">
-                <i class="fa fa-home"></i>Home
-              </a>
-            </li>
-          </ul>
-        </div>
-        <!--/.nav-collapse -->
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+            <a href="http://www.chenghaozhu.net" class="nav-link">
+              <span class="fa fa-home"></span>
+              Home
+            </a>
+          </li>
+        </ul>
       </div>
-      <!--/.container -->
     </div>
-    <!--/.navbar -->
+  </div>
 
-    <section class="main-body" style="margin-top:5rem">
+    <section class="container pt-5">
 
       <div class="jumbotron py-3 text-center">
         <h1 class="display-3">
@@ -238,7 +48,7 @@ $(document).ready(function () {
         </h1>
         <p class="lead">Explore the fast food study HDL composition and functions data using the shiny app.</p>
         <hr>
-        <a href="hdl/apps/app" class="btn btn-primary text-white pt-5">Shiny App</a>
+        <a href="hdl/apps/app" class="btn btn-primary btn-lg text-white mt-3">Shiny App</a>
       </div>
 
       <div id="old-analysis" class="section level2">
@@ -467,57 +277,52 @@ $(document).ready(function () {
           </li>
         </ul>
     </section>
-    <!-- begin wwww.htmlcommentbox.com -->
-    <div id="HCB_comment_box">
-      <pre><code>&lt;hr&gt;
-&lt;a href=&quot;http://www.htmlcommentbox.com&quot;&gt;Widget&lt;/a&gt; 
-is loading comments...</code></pre>
-    </div>
-    <link rel="stylesheet" type="text/css" href="//www.htmlcommentbox.com/static/skins/bootstrap/twitter-bootstrap.css?v=0" />
-    <script type="text/javascript" id="hcb">
-      /*<!--*/
-      if (!window.hcb_user) {
-        hcb_user = {
-          comments_header: 'Leave A Comment'
-        };
-      }(function () {
-        var s = document.createElement("script"),
-          l = hcb_user.PAGE || ("" + window.location).replace(/'/g, "%27"),
-          h = "//www.htmlcommentbox.com";
-        s.setAttribute("type", "text/javascript");
-        s.setAttribute("src", h + "/jread?page=" + encodeURIComponent(l).replace("+", "%2B") +
-          "&mod=%241%24wq1rdBcg%24X.dWI40gANxmDig9e3e740" + "&opts=16863&num=10&ts=1525975738193");
-        if (typeof s != "undefined") document.getElementsByTagName("head")[0].appendChild(s);
-      })(); /*-->*/
-    </script>
-    <!-- end www.htmlcommentbox.com -->
   </div>
 
-
-
-
+  <div class="container">
+        <!-- begin wwww.htmlcommentbox.com -->
+        <div id="HCB_comment_box">
+          <pre><code>&lt;hr&gt;
+    &lt;a href=&quot;http://www.htmlcommentbox.com&quot;&gt;Widget&lt;/a&gt; 
+    is loading comments...</code></pre>
+        </div>
+        <link rel="stylesheet" type="text/css" href="//www.htmlcommentbox.com/static/skins/bootstrap/twitter-bootstrap.css?v=0" />
+        <script type="text/javascript" id="hcb">
+          /*<!--*/
+          if (!window.hcb_user) {
+            hcb_user = {
+              comments_header: 'Leave A Comment'
+            };
+          }(function () {
+            var s = document.createElement("script"),
+              l = hcb_user.PAGE || ("" + window.location).replace(/'/g, "%27"),
+              h = "//www.htmlcommentbox.com";
+            s.setAttribute("type", "text/javascript");
+            s.setAttribute("src", h + "/jread?page=" + encodeURIComponent(l).replace("+", "%2B") +
+              "&mod=%241%24wq1rdBcg%24X.dWI40gANxmDig9e3e740" + "&opts=16863&num=10&ts=1525975738193");
+            if (typeof s != "undefined") document.getElementsByTagName("head")[0].appendChild(s);
+          })(); /*-->*/
+        </script>
+        <!-- end www.htmlcommentbox.com -->
   </div>
 
-  <script>
-    // add bootstrap table styles to pandoc tables
-    function bootstrapStylePandocTables() {
-      $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
-    }
-    $(document).ready(function () {
-      bootstrapStylePandocTables();
-    });
-  </script>
+    <!-- FOOTER -->
+    <footer class="bg-dark text-center p-4">
+      <div class="container text-light text-center">
+        <div class="row">
+          <div class="col">
+            <p>Copyright &copy; <span id="year"></span> Zivkovic Lab</p>
+          </div>
+        </div>
+      </div>
+  </footer>
 
-  <!-- dynamically load mathjax for compatibility with self-contained -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   <script>
-    (function () {
-      var script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
-      document.getElementsByTagName("head")[0].appendChild(script);
-    })();
-  </script>
-
+    // Get the current year for the copyright
+    $('#year').text(new Date().getFullYear())
+</script>
 </body>
-
 </html>

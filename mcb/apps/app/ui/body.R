@@ -120,6 +120,13 @@ bga_tree = tabItem(
     )
 )
 
+bga_structures = tabItem(
+    tabName = "bga_structures",
+    fluidRow(
+        uiOutput("bga_structures")
+    )
+)
+
 mcb_richness = tabItem(
     tabName = "mcb_richness",
     fluidRow(
@@ -189,6 +196,7 @@ body = dashboardBody(
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),
         bga_tree,
+        bga_structures,
         corrTabGen("bga_bga"),
         corrTabGen("bga_sfa"),
         ## Bile Acids

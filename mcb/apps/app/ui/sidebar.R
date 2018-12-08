@@ -32,6 +32,7 @@ sidebar = dashboardSidebar(
             text = "Biogenic Amines",
             menuSubItem("Boxplot", tabName = "bga_boxplot"),
             menuSubItem("Structure Similarity Tree", tabName = "bga_tree"),
+            menuSubItem("Molecular Structures", tabName = "bga_structures"),
             menuSubItem("vs Biogenic Amines", tabName = "bga_bga"),
             menuSubItem("vs Short Chain Fatty Acids", tabName = "bga_sfa")
         ),

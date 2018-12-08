@@ -1,0 +1,8 @@
+.datatables{
+    overflow: auto
+}
+
+aside .btn {
+    margin-right: auto !important;
+    margin-left: auto !important;
+}
