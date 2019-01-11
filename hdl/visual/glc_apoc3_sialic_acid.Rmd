@@ -10,8 +10,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
 ```
 
 ```{r}
-pkgs = c('dplyr','stringr','reshape2', 'tibble', "Metabase", 'tabulizer', 
-         "knitr", "kableExtra", "DT", "ggplot2", "plotly")
+pkgs = c('dplyr','stringr','reshape2', 'tibble', "Metabase", "DT", "ggplot2", "plotly")
 for(pkg in pkgs){
     library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
             character.only=TRUE)
