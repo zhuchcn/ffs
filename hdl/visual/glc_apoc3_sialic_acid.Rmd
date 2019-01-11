@@ -75,7 +75,7 @@ output$apoc3 = renderDataTable({
     design = model.matrix(~Treatment * Timepoint + Subject,
                           data = as(glc$sample_table, "data.frame"))
     df2 = mSet_limma(apoc3(), design, coef = 13, p.value = 13)
-        cbind(df1, df2[,4:5]) %>%
+    cbind(df1, df2[,4:5]) %>%
         datatable(selection = list(mode = "single", selected = 1, target = 'row')) %>%
         formatPercentage(1:4, digits = 2) %>%
         formatRound(5:6, digits = 3) %>%
@@ -98,3 +98,54 @@ renderPlotly({
 })
 ```
 
+
+The ratios of ApoC3 glycopeptides with different numbers of sialic acids.
+
+
+```{r}
+apoc3_raw = subset_features(glc, glc$feature_data$Protein == 'ApoC3') %>%
+    summarize_features('Glc')
+apoc3_ratio = GlycomicsSet(
+    conc_table = conc_table(
+        rbind(
+            `S0/S1` = apoc3_raw$conc_table[1,]/apoc3_raw$conc_table[2,],
+            `S0/S2` = apoc3_raw$conc_table[1,]/apoc3_raw$conc_table[3,],
+            `S1/S2` = apoc3_raw$conc_table[2,]/apoc3_raw$conc_table[3,]
+        )
+    ),
+    sample_table = sample_table(apoc3_raw$sample_table)
+)
+df1 = apoc3_ratio$conc_table %>%
+        t %>% as.matrix %>% as.data.frame %>%
+        cbind(apoc3_ratio$sample_table) %>% 
+        melt(variable.names = c("Subject", "Treatment", "Timepoint")) %>%
+        group_by(Treatment, Timepoint, variable) %>%
+        summarize(value = mean(value, na.rm = TRUE)) %>%
+        dcast(variable ~ Treatment + Timepoint) %>%
+        column_to_rownames("variable")
+    
+design = model.matrix(~Treatment * Timepoint + Subject,
+                      data = as(glc$sample_table, "data.frame"))
+df2 = mSet_limma(apoc3_ratio, design, coef = 13, p.value = 13)
+df = cbind(df1, df2[,4:5]) %>%
+    datatable(selection = list(mode = "single", selected = 1, target = 'row')) %>%
+    formatPercentage(1:4, digits = 2) %>%
+    formatRound(5:6, digits = 3) %>%
+    formatStyle(columns = 5:6, backgroundColor = "orange") %>%
+    formatStyle(
+        'pvalue', 
+        color = styleInterval(0.05, c('red', 'black'))
+    )
+output$apoc3_ratio = renderDataTable(
+    df, server = T, selection = 'single', selected = 1
+)
+dataTableOutput('apoc3_ratio')
+```
+
+```{r}
+renderPlotly({
+    feature = featureNames(apoc3_ratio)[input$apoc3_ratio_rows_selected]
+    plot_boxplot(apoc3_ratio, feature = feature, x = 'Timepoint', 
+                 cols = "Treatment", line = "Subject",  color = "Subject")
+})
+```
