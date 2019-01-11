@@ -1,0 +1,101 @@
+---
+title: "Sialic Acid S0/S1/S2"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
+                      error = FALSE)
+```
+
+```{r}
+pkgs = c('dplyr','stringr','reshape2', 'tibble', "Metabase", 'tabulizer', 
+         "knitr", "kableExtra", "DT", "ggplot2", "plotly")
+for(pkg in pkgs){
+    library(pkg, quietly=TRUE, verbose=FALSE, warn.conflicts=FALSE, 
+            character.only=TRUE)
+}
+load("../apps/app/data/data.rda")
+```
+
+Reviewer 1's comment 4:
+
+*ApoC-III in HDL Glycopeptides and related Discussion line 581-591: As known from previous work from Alaupovic, Zilversmit, Havel and others it is well known that the highly glycosylated form of ApoC-III is found on newly secreted TG-rich lipoproteins, which during lipolysis are de-sialated. Only particles containing C-III-0 are directed to receptor mediated uptake. Therefore, it would be interesting to know how the ratio of C-III-0/C-III-1 and C-III-0/C-III-2 changed  between the diets and wether this is significant. This information should be integrated and discussed on the basis of  the mass-spectrometric data and the existing literature.*
+    
+In the meeting before Christmas, we decided to look at the summarized ApoC3 with 0, 1, and 2 sialic acids, normalizing to 100%. 
+
+```{r}
+#checkboxInput('percentage', 'Nornalize glycopeptides into 100%?', TRUE)
+radioButtons(
+    'percentage', label = "How to normalize the data:", 
+     choiceName = c('Use 100%', 'Use Raw'), 
+     choiceValues = c(TRUE, FALSE)
+)
+```
+
+```{r}
+glc = data$data$glc$glycans
+glc$feature_data = glc$feature_data %>%
+    rownames_to_column("FeatureID") %>%
+    as_tibble() %>%
+    tidyr::extract(
+    col = 'Composition (Hex HexNAc Fuc Sia)', 
+    into = c('Hex', 'HexNac','Fuc', 'Sia'), 
+    regex = "(\\d{1})(\\d{1})(\\d{1})(\\d{1})",
+    remove = FALSE
+    ) %>% 
+    mutate(Glc = str_c(Protein, '_', Sia, 'S')) %>%
+    as.data.frame %>%
+    column_to_rownames('FeatureID') %>%
+    feature_data()
+apoc3 = reactive({
+    mset = subset_features(glc, glc$feature_data$Protein == 'ApoC3')
+    if(input$percentage) {
+        mset = transform_by_sample(mset, function(sample){
+            sample/sum(sample, na.rm = TRUE)
+        })
+    }
+    summarize_features(mset, 'Glc')
+})
+```
+
+Summarized total ApoC3 glycopeptides with 0, 1, and 2 sialic acids:
+
+```{r}
+output$apoc3 = renderDataTable({
+    df1 = apoc3()$conc_table %>%
+        t %>% as.matrix %>% as.data.frame %>%
+        cbind(apoc3()$sample_table) %>% 
+        melt(variable.names = c("Subject", "Treatment", "Timepoint")) %>%
+        group_by(Treatment, Timepoint, variable) %>%
+        summarize(value = mean(value, na.rm = TRUE)) %>%
+        dcast(variable ~ Treatment + Timepoint) %>%
+        column_to_rownames("variable")
+    
+    design = model.matrix(~Treatment * Timepoint + Subject,
+                          data = as(glc$sample_table, "data.frame"))
+    df2 = mSet_limma(apoc3(), design, coef = 13, p.value = 13)
+        cbind(df1, df2[,4:5]) %>%
+        datatable(selection = list(mode = "single", selected = 1, target = 'row')) %>%
+        formatPercentage(1:4, digits = 2) %>%
+        formatRound(5:6, digits = 3) %>%
+        formatStyle(columns = 5:6, backgroundColor = "orange") %>%
+        formatStyle(
+            'pvalue', 
+            color = styleInterval(0.05, c('red', 'black'))
+        )
+}, selection = 'single', server = T)
+dataTableOutput('apoc3')
+```
+
+Click on the row to see boxplot
+
+```{r}
+renderPlotly({
+    feature = featureNames(apoc3())[input$apoc3_rows_selected]
+    plot_boxplot(apoc3(), feature = feature, x = 'Timepoint', 
+                 cols = "Treatment", line = "Subject",  color = "Subject")
+})
+```
+
