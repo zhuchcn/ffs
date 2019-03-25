@@ -31,7 +31,7 @@ server <- function(input, output) {
     source("server/lpd/hist.R",      local = TRUE)
     source("server/lpd/hclust.R",    local = TRUE)
     source("server/lpd/pca.R",       local = TRUE)
-    source("server/lpd/clado.R",     local = TRUE)
+    #source("server/lpd/clado.R",     local = TRUE)
     source("server/lpd/pie.R",       local = TRUE)
     source("server/lpd/corr_fct.R",  local = TRUE)
     source("server/lpd/corr_cli.R",  local = TRUE)
@@ -46,6 +46,7 @@ server <- function(input, output) {
     source("server/fct/corr_cli.R",  local = TRUE)
     
     source("server/cli/boxplot.R",   local = TRUE)
+    
 }
 
 shinyApp(ui = ui, server = server)
