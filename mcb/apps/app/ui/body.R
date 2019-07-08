@@ -192,6 +192,7 @@ body = dashboardBody(
         corrTabGen("mcb_bga"),
         mcb_bac_corr,
         corrTabGen("mcb_sfa"),
+        corrTabGen("mcb_cli"),
         ## Biogenic Amines
         boxplotTabGen("pcr_boxplot"),
         boxplotTabGen("bga_boxplot"),

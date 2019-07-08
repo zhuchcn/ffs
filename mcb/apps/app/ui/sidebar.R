@@ -18,7 +18,8 @@ sidebar = dashboardSidebar(
             menuSubItem("Genus Scatter Plot", tabName = "mcb_scatter"),
             menuSubItem("vs Biogenic Amines", tabName = "mcb_bga"),
             menuSubItem("vs Bile Acids", tabName = "mcb_bac"),
-            menuSubItem("vs Short Chain Fatty Acids", tabName = "mcb_sfa")
+            menuSubItem("vs Short Chain Fatty Acids", tabName = "mcb_sfa"),
+            menuSubItem("vs Clinical Values", tabName = "mcb_cli")
         ),
         ## Menu for PICRUSt functions
         menuItem(

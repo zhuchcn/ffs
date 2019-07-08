@@ -25,6 +25,7 @@ server <- function(input, output) {
     source("server/mcb/corr_bga.R", local = TRUE)
     source("server/mcb/corr_bac.R", local = TRUE)
     source("server/mcb/corr_sfa.R", local = TRUE)
+    source("server/mcb/corr_cli.R", local = TRUE)
     source("server/mcb/clado.R", local = TRUE)
     source("server/mcb/pcoa.R", local = TRUE)
     source("server/mcb/richness.R", local = TRUE)
