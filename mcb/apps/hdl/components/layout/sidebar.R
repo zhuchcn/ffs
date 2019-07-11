@@ -96,12 +96,12 @@ DashboardSidebar = R6Class(
                         )
                     )
                 }
-                if("bca" %in% vars){
+                if("bac" %in% vars){
                     inputs = tagAppendChildren(
                         inputs,
                         selectInput(
-                            inputId = "bca-level",
-                            labels = c("Raw or Summarized Bile Acids?"),
+                            inputId = "bac-level",
+                            label = c("Raw or Summarized Bile Acids?"),
                             choices = c("raw", "summarized"),
                             selected = "raw"
                         )
@@ -117,7 +117,7 @@ DashboardSidebar = R6Class(
                     "mcb" = y_mset[[input$`mcb-norm`]][[input$`mcb-level`]],
                     "lpd" = y_mset[[input$`lpd-level`]],
                     "glc" = y_mset[[input$`glc-level`]],
-                    "bca" = y_mset[[input$`bca-level`]],
+                    "bac" = y_mset[[input$`bac-level`]],
                     y_mset
                 )
                 selectInput(
@@ -134,7 +134,7 @@ DashboardSidebar = R6Class(
                     "mcb" = x_mset[[input$`mcb-norm`]][[input$`mcb-level`]],
                     "lpd" = x_mset[[input$`lpd-level`]],
                     "glc" = x_mset[[input$`glc-level`]],
-                    "bca" = x_mset[[input$`bca-level`]],
+                    "bac" = x_mset[[input$`bac-level`]],
                     x_mset
                 )
                 states$X = x_mset$conc_table
@@ -144,7 +144,7 @@ DashboardSidebar = R6Class(
                     "mcb" = y_mset[[input$`mcb-norm`]][[input$`mcb-level`]],
                     "lpd" = y_mset[[input$`lpd-level`]],
                     "glc" = y_mset[[input$`glc-level`]],
-                    "bca" = y_mset[[input$`bca-level`]],
+                    "bac" = y_mset[[input$`bac-level`]],
                     y_mset
                 )
                 states$Y = y_mset$conc_table[input$`y-var`, , drop = FALSE]

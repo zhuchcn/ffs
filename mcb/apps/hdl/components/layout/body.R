@@ -38,7 +38,7 @@ DashboardBody = R6Class(
                     MatCor(props$Y, props$X, method = "pearson")[[1]],
                     selection = list(mode = "single", selected = 1),
                     options = list(
-                        order = list(4, "asc")
+                        order = list(3, "asc")
                     )
                 ) %>%
                     formatSignif(columns = 1:4, digits = 4)
