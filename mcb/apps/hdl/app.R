@@ -1,17 +1,32 @@
-pkgs = c("shiny", "shinydashboard", "dplyr", "reshape2", "stringr", "tibble", 
-         "ggplot2", "plotly", "DT", "Metabase")
-for(pkg in pkgs) {
-    library(pkg, character.only = T, warn.conflicts = F, quietly = T, verbose = F)
-}
+source('global.R')
 
-ui <- dashboardPage(
-    
+App = R6Class(
+    "App",
+    inherit = ShinyModule,
+    public = list(
+        # attributes
+        sidebar = DashboardSidebar$new(),
+        body = DashboardBody$new(),
+        
+        # UI
+        ui = function(){
+            dashboardPage(
+                header = dashboardHeader(title = "Fast Food Study"),
+                sidebar = self$sidebar$ui(),
+                body = self$body$ui()
+            )
+        },
+        
+        # server
+        server = function(input, output, session){
+            sidebarInputs = self$sidebar$call()
+            self$body$call(props = sidebarInputs)
+            
+            shinyjs::removeClass(id = "submit", selector = ".btn")
+        }
+    )
 )
 
-server <- function(input, output) {
+app = App$new()
 
-}
-
-# Run the application 
-shinyApp(ui = ui, server = server)
-
+shiny::shinyApp(app$ui(), app$server)
