@@ -58,6 +58,7 @@ DashboardBody = R6Class(
                     stat_smooth(
                         inherit.aes = FALSE, aes(x = x, y = y), method = "lm"
                     ) +
+                    labs(x = `x-var`, y = rownames(props$Y)[1]) +
                     theme_bw()
             })
         }
