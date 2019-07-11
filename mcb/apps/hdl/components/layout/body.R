@@ -13,6 +13,7 @@ DashboardBody = R6Class(
         ui = function(){
             dashboardBody(
                 tags$link(href = "styles.css", rel = "stylesheet"),
+                shinyjs::useShinyjs(),
                 column(
                     width = 6,
                     box(

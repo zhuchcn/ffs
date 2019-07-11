@@ -22,7 +22,7 @@ App = R6Class(
             sidebarInputs = self$sidebar$call()
             self$body$call(props = sidebarInputs)
             
-            shinyjs::removeClass(id = "submit", selector = ".btn")
+            shinyjs::removeClass(class = "btn-default", selector = ".btn")
         }
     )
 )
